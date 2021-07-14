@@ -1,5 +1,5 @@
 [package]
-name = "ndarray-matlab-tutorial"
+name = "matlab-ndarray-tutorial"
 description = "Common Matlab idioms in ndarary with Rust."
 version = "0.1.0"
 authors = ["Benjamin Kay <benjamin@benkay.net>"]
