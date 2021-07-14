@@ -10,15 +10,15 @@ Clone this repository with:
 git clone https://github.com/benkay86/ndarray-matlab-tutorial.git
 ```
 
-Compile and run the `hello_ndarray` example to verify that everything works.
+Compile and run the `build_test` example to verify that everything works.
 
 ```
 cd ndarray-matlab-tutorial
-cargo run --bin hello_ndarray
+cargo run --bin build_test
 ```
 ```
 ... cargo/rustc output ...
-Running `target/debug/01_build_test`
+Running `target/debug/build_test`
 Testing BLAS backend... OK.
 Testing LAPACK backend... OK.
 ```
