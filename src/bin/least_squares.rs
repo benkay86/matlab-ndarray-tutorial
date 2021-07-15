@@ -3,7 +3,7 @@
 //! p-values.
 
 extern crate blas_src;
-use ndarray_matlab_tutorial::pseudoinverse::{PseudoInverse, PseudoInverseOutput};
+use matlab_ndarray_tutorial::pseudoinverse::{PseudoInverse, PseudoInverseOutput};
 use ndarray::{Array, Axis, array, s, Zip};
 use ndarray_linalg::{LeastSquaresResult, LeastSquaresSvd};
 use ndarray_rand::RandomExt;

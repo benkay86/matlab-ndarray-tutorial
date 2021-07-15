@@ -6,7 +6,7 @@
 
 extern crate blas_src;
 use ndarray::{Array, Axis, array};
-use ndarray_matlab_tutorial::lls;
+use matlab_ndarray_tutorial::lls;
 use ndarray_rand::{RandomExt, SamplingStrategy};
 use rand_distr::StandardNormal;
 

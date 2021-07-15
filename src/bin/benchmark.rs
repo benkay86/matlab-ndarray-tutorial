@@ -4,7 +4,7 @@
 //! cargo run --release --bin 20_benchmark
 
 extern crate blas_src;
-use ndarray_matlab_tutorial::pseudoinverse::PseudoInverse;
+use matlab_ndarray_tutorial::pseudoinverse::PseudoInverse;
 use ndarray::{Array, Axis};
 use ndarray_linalg::{LeastSquaresResult, LeastSquaresSvdInto};
 use ndarray_rand::RandomExt;
