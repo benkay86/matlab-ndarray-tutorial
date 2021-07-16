@@ -7,13 +7,13 @@ This tutorial demonstrates how to implement common [Matlab](https://www.mathwork
 Clone this repository with:
 
 ```
-git clone https://github.com/benkay86/ndarray-matlab-tutorial.git
+git clone https://github.com/benkay86/matlab-ndarray-tutorial.git
 ```
 
 Compile and run the `build_test` example to verify that everything works.
 
 ```
-cd ndarray-matlab-tutorial
+cd matlab-ndarray-tutorial
 cargo run --bin build_test
 ```
 ```
@@ -91,9 +91,9 @@ Consider working the examples beginning in the following order.  Once you have m
 
 The reader is assumed to be familiar with [Matlab](https://www.mathworks.com/products/matlab.html) (or [Octave](https://www.gnu.org/software/octave/index)) and possess basic knowledge of [Rust](https://www.rust-lang.org/).  For general questions about these languages, refer to the reference documentation ([Matlab](https://www.mathworks.com/help/matlab/), [Rust](https://docs.rs/std/)) or post in the general user forums ([Matlab](https://www.mathworks.com/matlabcentral/), [Rust](https://users.rust-lang.org/)).
 
-For help with ndarray refer to the [ndarray](https://docs.rs/ndarray) and [ndarray-linalg](https://docs.rs/ndarray-linalg) documentation (especially the [ArrayBase](https://docs.rs/ndarray/0.15.1/ndarray/struct.ArrayBase.html) struct).  Rust's ndarray is very similar to [Python's](https://www.python.org/) [numpy](https://numpy.org/), so you may also find relevant solutions involving numpy.  If you think you have found a bug, or if something seems very unclear, open an issue on the Github page for [ndarray](https://github.com/rust-ndarray/ndarray) or [ndarray-linalg](https://github.com/rust-ndarray/ndarray-linalg).  If you have issues with compiling or linking, try reading the comments in [Cargo.toml](Cargo.toml) for an explanation of the various dependencies.
+For help with ndarray refer to the [ndarray](https://docs.rs/ndarray) and [ndarray-linalg](https://docs.rs/ndarray-linalg) documentation (especially the [ArrayBase](https://docs.rs/ndarray/0.15.3/ndarray/struct.ArrayBase.html) struct).  Rust's ndarray is very similar to [Python's](https://www.python.org/) [numpy](https://numpy.org/), so you may also find relevant solutions involving numpy.  If you think you have found a bug, or if something seems very unclear, open an issue on the Github page for [ndarray](https://github.com/rust-ndarray/ndarray) or [ndarray-linalg](https://github.com/rust-ndarray/ndarray-linalg).  If you have issues with compiling or linking, try reading the comments in [Cargo.toml](Cargo.toml) for an explanation of the various dependencies.
 
-If you discover an error in this tutorial, have a question about an example, or would like to suggest an improvement, please open an issue on [Github](https://github.com/benkay86/ndarray-matlab-tutorial/issues) or e-mail the primary author [benjamin@benkay.net](mailto:benjamin@benkay.net).
+If you discover an error in this tutorial, have a question about an example, or would like to suggest an improvement, please open an issue on [Github](https://github.com/benkay86/matlab-ndarray-tutorial/issues) or e-mail the primary author [benjamin@benkay.net](mailto:benjamin@benkay.net).
 
 ## Concepts
 
