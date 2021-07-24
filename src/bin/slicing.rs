@@ -42,6 +42,10 @@ fn main() {
     // The ..2 is equivalent to 0..2, "Rows 0 up to but not including 2."
     // The ..3 is equivalent to 0..3, "Columns 0 up to but not including 3."
     let view = mat.slice(s![..2, ..3]);
+    println!("Upper left 2x3 view:\n{:?}", view);
+    // If it's easier for you to think in inclusive ranges, you can use this
+    // alternate syntax.  The ..1 means, "Rows 0 up to and including 1."
+    let view = mat.slice(s![..=1, ..=2]);
     println!("Upper left 2x3 view:\n{:?}\n", view);
 
     // Generate a view of odd numbered columns.
