@@ -7,10 +7,10 @@
 //! a linear least squares system.  It is useful in the setting of permutation
 //! testing, see <bin/parfor.rs> for an example.
 
-use ndarray::{Array, ArrayBase, Data, Dim, Dimension, Axis, Ix, OwnedRepr, ScalarOperand, Zip};
-use ndarray_linalg::{Lapack, Scalar};
-use ndarray_linalg::error::Result;
 use crate::pseudoinverse::{PseudoInverse, PseudoInverseOutput};
+use ndarray::{Array, ArrayBase, Axis, Data, Dim, Dimension, Ix, OwnedRepr, ScalarOperand, Zip};
+use ndarray_linalg::error::Result;
+use ndarray_linalg::{Lapack, Scalar};
 
 /// Operation for computing t-values associated with a solved model.
 /// Generic over 1d and 2d matrices of observations, `y`.
@@ -21,7 +21,8 @@ pub trait TValuesWith<YData: Data, YDim: Dimension> {
     fn tvalues_with(&self, y: &ArrayBase<YData, YDim>) -> Self::Output;
 }
 // General case for 2-dimensional y.
-impl<F, YData, XData, XPinvData, VarBData> TValuesWith<YData, Dim<[Ix; 2]>> for SolvedModel<XData, XPinvData, VarBData>
+impl<F, YData, XData, XPinvData, VarBData> TValuesWith<YData, Dim<[Ix; 2]>>
+    for SolvedModel<XData, XPinvData, VarBData>
 where
     F: Lapack + Scalar + ScalarOperand,
     YData: Data<Elem = F>,
@@ -50,7 +51,8 @@ where
     }
 }
 // Also handle 1-dimensional y.
-impl<F, YData, XData, XPinvData, VarBData> TValuesWith<YData, Dim<[Ix; 1]>> for SolvedModel<XData, XPinvData, VarBData>
+impl<F, YData, XData, XPinvData, VarBData> TValuesWith<YData, Dim<[Ix; 1]>>
+    for SolvedModel<XData, XPinvData, VarBData>
 where
     F: Lapack + Scalar + ScalarOperand,
     YData: Data<Elem = F>,
@@ -71,9 +73,9 @@ where
 
 /// Helper trait to make compiler error messages more scrutable.
 /// Implemented for non-zero dimensions (i.e. # of axes) <= 2.
-pub trait DimLessEq2: Dimension { }
-impl DimLessEq2 for Dim<[Ix; 1]> { }
-impl DimLessEq2 for Dim<[Ix; 2]> { }
+pub trait DimLessEq2: Dimension {}
+impl DimLessEq2 for Dim<[Ix; 1]> {}
+impl DimLessEq2 for Dim<[Ix; 2]> {}
 
 // Cache of computed values for solved model.
 pub struct SolvedModel<XData, XPinvData, VarBData>
@@ -110,7 +112,7 @@ where
     where
         YData: Data<Elem = F>,
         YDim: DimLessEq2,
-        Self: TValuesWith<YData, YDim, Output=Array<F, YDim>>,
+        Self: TValuesWith<YData, YDim, Output = Array<F, YDim>>,
     {
         // Delegate to the `TValuesWith` trait.
         <Self as TValuesWith<YData, YDim>>::tvalues_with(self, y)
@@ -119,18 +121,20 @@ where
 
 /// Pre-solve a model speficied by the design matrix `x` where the rows in
 /// `x` are observations and colums are predictor variables.
-pub fn pre_solve<F, XData> (x: ArrayBase<XData, Dim<[Ix; 2]>>) -> Result<SolvedModel<XData, OwnedRepr<F>, OwnedRepr<F>>>
+pub fn pre_solve<F, XData>(
+    x: ArrayBase<XData, Dim<[Ix; 2]>>,
+) -> Result<SolvedModel<XData, OwnedRepr<F>, OwnedRepr<F>>>
 where
     F: Lapack + Scalar,
     XData: Data<Elem = F>,
 {
-    let PseudoInverseOutput{pinv: x_pinv, ..} = x.pinv()?;
+    let PseudoInverseOutput { pinv: x_pinv, .. } = x.pinv()?;
     let var_b = x_pinv.fold_axis(Axis(1), F::zero(), |&sum, &col| sum + col * col);
     let df = x.nrows() - x.ncols() - 1;
     Ok(SolvedModel {
         x,      // design matrix
         x_pinv, // pseudoinverse of design matrix
         var_b,  // variance of estimated parameters
-        df      // degrees of freedom
+        df,     // degrees of freedom
     })
 }

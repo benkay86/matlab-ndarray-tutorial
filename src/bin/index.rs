@@ -20,7 +20,7 @@ fn main() {
     // ```matlab
     // el = mat(1,1)
     // ```
-    let el = mat[[0,0]];
+    let el = mat[[0, 0]];
     println!("First element: {:?}", el);
     // We can also index using the `get()` method.  Both the index operation
     // `[]` and `get()` perform bounds checking.  Indexing with `[]` panics if
@@ -30,7 +30,7 @@ fn main() {
     // ```matlab
     // el = mat(1,3)
     // ```
-    match mat.get([0,2]) {
+    match mat.get([0, 2]) {
         Some(el) => println!("Top right element: {:?}\n", el),
         None => println!("Index out of bounds.\n"),
     }
@@ -47,7 +47,7 @@ fn main() {
     // ```
     let submat = mat.select(Axis(0), &[0]);
     println!("First row:\n{:?}", submat);
-    let submat = mat.select(Axis(1), &[1,2]);
+    let submat = mat.select(Axis(1), &[1, 2]);
     println!("Second and third columns:\n{:?}\n", submat);
 
     // We can also select elements from a vector, or 1d array.  In Rust this is
@@ -60,7 +60,7 @@ fn main() {
     // submat = mat1d([2,3])
     // ```
     let v = array![1., 2., 3.];
-    let submat = v.select(Axis(0), &[1,2]);
+    let submat = v.select(Axis(0), &[1, 2]);
     println!("Second and third columns of first row:\n{:?}\n", submat);
 
     // Matlab offers us yet another way of indexing multidimensional arrays with
@@ -89,6 +89,6 @@ fn main() {
     println!("Memory offset 1: {:?}", el); // 2, but in Matlab mat(2) is 4
     let el = mat.as_slice_memory_order().unwrap()[2];
     println!("Memory offset 2: {:?}", el); // 3, but in Matlab mat(3) is 2
-    // If this seems confusing, it is!  And you probably won't want to use
-    // offsets for indexing very often.
+                                           // If this seems confusing, it is!  And you probably won't want to use
+                                           // offsets for indexing very often.
 }

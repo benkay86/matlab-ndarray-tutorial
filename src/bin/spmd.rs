@@ -5,8 +5,8 @@
 //! manually.  This is roughly analagous to Matlab's spmd primitives.
 
 extern crate blas_src;
-use ndarray::{Array, Axis, array};
 use matlab_ndarray_tutorial::lls;
+use ndarray::{array, Array, Axis};
 use ndarray_rand::{RandomExt, SamplingStrategy};
 use rand_distr::StandardNormal;
 
@@ -15,7 +15,9 @@ fn main() {
     // coefficient b.
     // See <parfor.rs> for explanations.
     let n_obs = 32;
-    let x = Array::linspace(0., 3., n_obs).into_shape((n_obs, 1)).unwrap();
+    let x = Array::linspace(0., 3., n_obs)
+        .into_shape((n_obs, 1))
+        .unwrap();
     // Try setting b to zero and see what happens to the p-value.
     let b = array![1.];
     println!("true beta: {:?}", b[0]);
@@ -51,7 +53,7 @@ fn main() {
     fn par_permute<'a, I, F>(permute: &F, mut iter_mut: I)
     where
         I: Iterator<Item = &'a mut f64> + Send + Sync,
-        F: Fn(&mut f64)->() + Send + Sync,
+        F: Fn(&mut f64) -> () + Send + Sync,
     {
         // Recurse until we exhaust the elements in t.
         if let Some(el) = iter_mut.next() {
@@ -60,14 +62,17 @@ fn main() {
             // thread then it will execute the second closure in parallel.
             // Otherwise the first thread will execute the second closure after
             // it finishes executing the first closure.
-            rayon::join(||{
-                // Perform this permutation on a worker thread.
-                permute(el);
-            }, ||{
-                // Perform the remaining permutations recursively, on the same
-                // or possibly other worker threads.
-                par_permute(permute, iter_mut);
-            });
+            rayon::join(
+                || {
+                    // Perform this permutation on a worker thread.
+                    permute(el);
+                },
+                || {
+                    // Perform the remaining permutations recursively, on the same
+                    // or possibly other worker threads.
+                    par_permute(permute, iter_mut);
+                },
+            );
         }
     }
 
@@ -78,14 +83,7 @@ fn main() {
     // Two-tailed test.
     // Sum the number of simulations in which |t0| > |t|.
     let t0 = t0[0].abs();
-    let sum = t.fold(0, |sum, t| {
-        if t0 > t.abs() {
-            sum + 1
-        }
-        else {
-            sum
-        }
-    });
+    let sum = t.fold(0, |sum, t| if t0 > t.abs() { sum + 1 } else { sum });
     // Compute the p-value.
     let p = 1. - (sum as f64) / (n_perm as f64);
     println!("p-value: {:?}", p);

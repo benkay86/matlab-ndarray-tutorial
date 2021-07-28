@@ -16,9 +16,7 @@ use rand::distributions::Distribution;
 fn main() {
     // Generate a matrix from which to take random samples.
     println!("3x3 matrix to be sampled:");
-    let mat = array![[1., 2., 3.],
-                     [4., 5., 6.],
-                     [7., 8., 9.]];
+    let mat = array![[1., 2., 3.], [4., 5., 6.], [7., 8., 9.]];
     println!("{:?}", mat);
 
     // Do it the easy way using ndarray_rand::RandomExt::sample_axis.

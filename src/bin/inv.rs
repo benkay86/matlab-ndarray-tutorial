@@ -1,9 +1,9 @@
 //! Solve non-singular systems of linear equations and compute matrix inverse.
 
 extern crate blas_src;
-use ndarray::{Array, array};
-use ndarray_linalg::solve::{Inverse, Solve, Factorize};
 use approx::AbsDiffEq;
+use ndarray::{array, Array};
+use ndarray_linalg::solve::{Factorize, Inverse, Solve};
 
 fn main() {
     // Tolerance "epsilon" to use in comparisons.

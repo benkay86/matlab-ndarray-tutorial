@@ -29,20 +29,34 @@ fn main() {
     println!("Time to compute pseudoinverse of 512 x 512 matrix averaged over 64 iterations:");
     let start = std::time::Instant::now();
     x.axis_iter(Axis(2)).for_each(|x| {
-        let LeastSquaresResult { solution: _x_pinv, .. } = x.to_owned().least_squares_into(Array::<f64, _>::eye(x.shape()[0])).unwrap();
+        let LeastSquaresResult {
+            solution: _x_pinv, ..
+        } = x
+            .to_owned()
+            .least_squares_into(Array::<f64, _>::eye(x.shape()[0]))
+            .unwrap();
     });
     let elapsed = start.elapsed();
-    println!("dgesvd (Matlab's pinv): {:?} ms", elapsed.as_millis() / x.shape()[2] as u128);
+    println!(
+        "dgesvd (Matlab's pinv): {:?} ms",
+        elapsed.as_millis() / x.shape()[2] as u128
+    );
     let start = std::time::Instant::now();
     x.axis_iter(Axis(2)).for_each(|x| {
         x.pinv_svd().unwrap();
     });
     let elapsed = start.elapsed();
-    println!("dgesdd (SVD divide-and-conquer): {:?} ms", elapsed.as_millis() / x.shape()[2] as u128);
+    println!(
+        "dgesdd (SVD divide-and-conquer): {:?} ms",
+        elapsed.as_millis() / x.shape()[2] as u128
+    );
     let start = std::time::Instant::now();
     x.axis_iter(Axis(2)).for_each(|x| {
         x.pinv().unwrap();
     });
     let elapsed = start.elapsed();
-    println!("QR decomposition: {:?} ms", elapsed.as_millis() / x.shape()[2] as u128);
+    println!(
+        "QR decomposition: {:?} ms",
+        elapsed.as_millis() / x.shape()[2] as u128
+    );
 }

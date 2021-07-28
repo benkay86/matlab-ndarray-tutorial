@@ -1,12 +1,18 @@
 //! Compute the Moore-Penrose pseudoinverse of a matrix.
+//!
+//! See [`PseudoInverse::pinv()`] for most use cases.
+//! See [`PseudoInverseInto::pinv_qr_into()`] for the special case where you
+//! you believe the input matrix is full rank.
+//! See [`PseudoInverseInto::pinv_svd_into()`] when you believe the input matrix
+//! is not full rank.
 
 use ndarray::{Array, ArrayBase, Data, DataMut, Dim, Dimension, Ix, RawData};
-use ndarray_linalg::{Lapack, Scalar};
 use ndarray_linalg::error::{LinalgError, Result};
-use ndarray_linalg::qr::{QR, QRInto, QRSquare, QRSquareInto};
-use ndarray_linalg::svddc::{SVDDC, SVDDCInto, UVTFlag};
-use ndarray_linalg::triangular::{Diag, SolveTriangularInto};
+use ndarray_linalg::qr::{QRInto, QRSquare, QRSquareInto, QR};
 use ndarray_linalg::solveh::UPLO;
+use ndarray_linalg::svddc::{SVDDCInto, UVTFlag, SVDDC};
+use ndarray_linalg::triangular::{Diag, SolveTriangularInto};
+use ndarray_linalg::{Lapack, Scalar};
 use std::mem::drop;
 
 // Turn an array of real numbers of type `A` into an array of (possibly) complex
@@ -19,8 +25,8 @@ use std::mem::drop;
 fn into_maybe_complex<A, B, S, D>(a: ArrayBase<S, D>) -> Array<B, D>
 where
     S: RawData<Elem = A> + DataMut + core::any::Any,
-    A: Scalar<Real=A>,
-    B: Scalar<Real=A> + core::any::Any,
+    A: Scalar<Real = A>,
+    B: Scalar<Real = A> + core::any::Any,
     D: Dimension + 'static,
 {
     let mut a_opt = Some(a);
@@ -36,12 +42,17 @@ where
 // If any diagonal elements of `r` are smaller than the product of the largest
 // diagonal element of `r` and `rcond` then the matrix is assumed to be
 // rank-deficient.
-fn is_rank_deficient<MaybeComplex, RealFloat, RData>(r: &ArrayBase<RData, Dim<[Ix; 2]>>, rcond: RealFloat) -> bool
+fn is_rank_deficient<MaybeComplex, RealFloat, RData>(
+    r: &ArrayBase<RData, Dim<[Ix; 2]>>,
+    rcond: RealFloat,
+) -> bool
 where
-    MaybeComplex: Lapack + Scalar<Real=RealFloat>,
-    RealFloat: Scalar<Real=RealFloat> + std::cmp::PartialOrd,
+    MaybeComplex: Lapack + Scalar<Real = RealFloat>,
+    RealFloat: Scalar<Real = RealFloat> + std::cmp::PartialOrd,
     RData: Data<Elem = MaybeComplex>,
 {
+    // Find the largest `max` diagonal element of `r` while simultaneously
+    // computing the absolute value of each element in `r`.
     let mut max = RealFloat::zero();
     let r_diag = r.diag().mapv(|el| {
         let el = el.abs();
@@ -50,26 +61,32 @@ where
         }
         el
     });
+    // Compute the epsilon cutoff for small values of `r`.
     let eps = rcond * max;
+    // Check if any diagonal elements of `r` is smaller then epsilon.
+    // If so, the matrix is rank deficient.
     r_diag.into_iter().any(|el| el < &eps)
 }
 
-// Compute pseudoinverse of skinny matrix whose QR decomposition is `q` and `r`
-// assuming the matrix is full rank.
-fn pinv_qr<MaybeComplex, RealFloat, S>(q: ArrayBase<S, Dim<[Ix; 2]>>, r: ArrayBase<S, Dim<[Ix; 2]>>) -> Result<Array<MaybeComplex, Dim<[Ix; 2]>>>
+// Helper function to compute the pseudoinverse of a skinny matrix whose QR
+// decomposition is `q` and `r` assuming the matrix is full rank.
+fn pinv_qr<MaybeComplex, RealFloat, S>(
+    q: ArrayBase<S, Dim<[Ix; 2]>>,
+    r: ArrayBase<S, Dim<[Ix; 2]>>,
+) -> Result<Array<MaybeComplex, Dim<[Ix; 2]>>>
 where
-    MaybeComplex: Lapack + Scalar<Real=RealFloat>,
-    RealFloat: Scalar<Real=RealFloat> + std::cmp::PartialOrd,
+    MaybeComplex: Lapack + Scalar<Real = RealFloat>,
+    RealFloat: Scalar<Real = RealFloat> + std::cmp::PartialOrd,
     S: DataMut<Elem = MaybeComplex>,
 {
     // Take q* where * is the conjugate/Hermitian transpose.
     let qh = q.mapv_into(|el| el.conj()).reversed_axes();
-    // Cheaply invert upper triangular R using back
+    // Cheaply invert upper triangular r using back
     // substitution.  The memory allocated for the identity
     // matrix is reused to store the matrix inverse.
     let identity_matrix = Array::<MaybeComplex, Dim<[Ix; 2]>>::eye(r.nrows());
     let r_inv = r.solve_triangular_into(UPLO::Upper, Diag::NonUnit, identity_matrix)?;
-    // No longer need R.
+    // No longer need r.
     drop(r);
     // Compute and return the pseudoinverse.
     Ok(r_inv.dot(&qh))
@@ -78,10 +95,15 @@ where
 // Compute pseudoinverse of a matrix whose SVD decomposition is `u`, `s`,
 // and `vh` using the reciprocal condition number `rcond`.  Returns a tuple of
 // the matrix rank and the pseudoinverse.
-fn pinv_svd_with_rcond<MaybeComplex, RealFloat, MaybeComplexData, RealData>(u: ArrayBase<MaybeComplexData, Dim<[Ix; 2]>>, s: ArrayBase<RealData, Dim<[Ix; 1]>>, vh: ArrayBase<MaybeComplexData, Dim<[Ix; 2]>>, rcond: RealFloat) -> (usize, Array<MaybeComplex, Dim<[Ix; 2]>>)
+fn pinv_svd_with_rcond<MaybeComplex, RealFloat, MaybeComplexData, RealData>(
+    u: ArrayBase<MaybeComplexData, Dim<[Ix; 2]>>,
+    s: ArrayBase<RealData, Dim<[Ix; 1]>>,
+    vh: ArrayBase<MaybeComplexData, Dim<[Ix; 2]>>,
+    rcond: RealFloat,
+) -> (usize, Array<MaybeComplex, Dim<[Ix; 2]>>)
 where
-    MaybeComplex: Lapack + Scalar<Real=RealFloat>,
-    RealFloat: Scalar<Real=RealFloat> + std::cmp::PartialOrd,
+    MaybeComplex: Lapack + Scalar<Real = RealFloat>,
+    RealFloat: Scalar<Real = RealFloat> + std::cmp::PartialOrd,
     MaybeComplexData: DataMut<Elem = MaybeComplex>,
     RealData: DataMut<Elem = RealFloat>,
 {
@@ -102,8 +124,7 @@ where
     let sinv = s.mapv_into(|el| {
         if el.re() < eps {
             MaybeComplex::from_real(MaybeComplex::Real::zero())
-        }
-        else {
+        } else {
             rank += 1;
             MaybeComplex::from_real(MaybeComplex::Real::one() / el.re())
         }
@@ -140,6 +161,9 @@ pub struct PseudoInverseOutput<PInv> {
 }
 
 /// Pseudoinverse of a matrix.
+///
+/// See also [`PseudoInverseInto`] for a more memory-efficient pseudoinverse
+/// that consumes the matrix being pseudoinverted.
 pub trait PseudoInverse {
     /// Type of the returned pseudoinverse matrix.
     type PInv;
@@ -171,8 +195,8 @@ pub trait PseudoInverse {
 
 impl<MaybeComplex, RealFloat, SelfData> PseudoInverse for ArrayBase<SelfData, Dim<[Ix; 2]>>
 where
-    MaybeComplex: Lapack + Scalar<Real=RealFloat>,
-    RealFloat: Scalar<Real=RealFloat> + std::cmp::PartialOrd,
+    MaybeComplex: Lapack + Scalar<Real = RealFloat>,
+    RealFloat: Scalar<Real = RealFloat> + std::cmp::PartialOrd,
     SelfData: Data<Elem = MaybeComplex>,
 {
     type PInv = Array<MaybeComplex, Dim<[Ix; 2]>>;
@@ -180,10 +204,8 @@ where
     type Real = RealFloat;
 
     fn pinv(&self) -> Result<PseudoInverseOutput<Self::PInv>> {
-        // Reciprocal condition number for determining rank deficiency.
+        // Default reciprocal condition number for determining rank deficiency.
         const RCOND: f64 = 1e-15;
-
-        // Delegate computation.
         self.pinv_with_rcond(MaybeComplex::real(RCOND))
     }
 
@@ -192,68 +214,64 @@ where
         let rcond = rcond.abs();
 
         // If matrix is "fat" then compute the QR decomposition of its "skinny"
-        // transpose.  If matrix is square then used a memory-optimized version
-        // of the QR decomposition.
+        // transpose and return the transpose of that pseudoinverse.
+        // If matrix is square then used a memory-optimized version of the
+        // QR decomposition.
         let nrows = self.nrows();
         let ncols = self.ncols();
         let res = if ncols > nrows {
             self.t().qr()
-        }
-        else if ncols < nrows {
+        } else if ncols < nrows {
             self.qr()
-        }
-        else {
+        } else {
             self.qr_square()
         };
 
         // Did QR decomposition succeed?
         match res {
             Err(e) => {
-                if let LinalgError::Lapack(lax::error::Error::LapackComputationalFailure { return_code: _ }) = e {
+                if let LinalgError::Lapack(lax::error::Error::LapackComputationalFailure {
+                    return_code: _,
+                }) = e
+                {
                     // LAPACK failed to compute the QR decomposition due to
                     // numerical issues.  Try again using SVD.
                     self.pinv_svd_with_rcond(rcond)
-                }
-                else {
+                } else {
                     // Some other error happened that we can't recover from.
                     Err(e)
                 }
-            },
+            }
             Ok((q, r)) => {
                 if is_rank_deficient(&r, rcond) {
                     // Fallback to SVD if matrix was rank deficient.
                     drop(q);
                     drop(r);
                     self.pinv_svd_with_rcond(rcond)
-                }
-                else {
+                } else {
                     // The matrix is full-rank, so go ahead using QR
                     // decomposition to compute the pseudoinverse.
                     let pinv = pinv_qr(q, r)?;
 
                     // Compose output.
                     if ncols > nrows {
-                        Ok(PseudoInverseOutput{
+                        // Return transpose of pseudoinverse if input matrix
+                        // was fat.
+                        Ok(PseudoInverseOutput {
                             pinv: pinv.reversed_axes(),
                             rank: nrows,
                         })
-                    }
-                    else {
-                        Ok(PseudoInverseOutput{
-                            pinv,
-                            rank: ncols,
-                        })
+                    } else {
+                        Ok(PseudoInverseOutput { pinv, rank: ncols })
                     }
                 }
-            },
+            }
         }
     }
 
-    fn pinv_svd(&self) ->Result<PseudoInverseOutput<Self::PInv>> {
-        // Reciprocal condition number for determining rank deficiency.
+    fn pinv_svd(&self) -> Result<PseudoInverseOutput<Self::PInv>> {
+        // Default reciprocal condition number for determining rank deficiency.
         const RCOND: f64 = 1e-15;
-
-        // Delegate computation.
         self.pinv_svd_with_rcond(MaybeComplex::real(RCOND))
     }
 
@@ -273,12 +291,14 @@ where
         let (rank, pinv) = pinv_svd_with_rcond(u.unwrap(), s, vh.unwrap(), rcond);
 
         // Compose return value.
-        Ok(PseudoInverseOutput{ rank, pinv })
+        Ok(PseudoInverseOutput { rank, pinv })
     }
 }
 
-/// Pseudoinverse of a matrix.  Attempts to be more memory-efficient than
-/// [`PseudoInverse`] by consuming `self` and reusing its memory when possible.
+/// Pseudoinverse of a matrix.
+///
+/// Attempts to be more memory-efficient than [`PseudoInverse`] by consuming
+/// `self` and reusing its memory when possible.
 pub trait PseudoInverseInto {
     /// Type of the returned pseudoinverse matrix.
     type PInv;
@@ -325,8 +345,8 @@ pub trait PseudoInverseInto {
 // See impl of PseudoInverse for detailed comments.
 impl<MaybeComplex, RealFloat, SelfData> PseudoInverseInto for ArrayBase<SelfData, Dim<[Ix; 2]>>
 where
-    MaybeComplex: Lapack + Scalar<Real=RealFloat>,
-    RealFloat: Scalar<Real=RealFloat> + std::cmp::PartialOrd,
+    MaybeComplex: Lapack + Scalar<Real = RealFloat>,
+    RealFloat: Scalar<Real = RealFloat> + std::cmp::PartialOrd,
     SelfData: DataMut<Elem = MaybeComplex>,
 {
     type PInv = Array<MaybeComplex, Dim<[Ix; 2]>>;
@@ -340,67 +360,59 @@ where
 
     fn pinv_into_with_rcond(self, rcond: Self::Real) -> Result<PseudoInverseOutput<Self::PInv>> {
         let rcond = rcond.abs();
-
-        // Attempt QR decomposition.
         let nrows = self.nrows();
         let ncols = self.ncols();
         let res = if ncols > nrows {
             self.t().qr()
-        }
-        else if ncols < nrows {
+        } else if ncols < nrows {
             self.qr()
-        }
-        else {
+        } else {
             self.qr_square()
         };
         match res {
             Err(e) => {
-                if let LinalgError::Lapack(lax::error::Error::LapackComputationalFailure { return_code: _ }) = e {
+                if let LinalgError::Lapack(lax::error::Error::LapackComputationalFailure {
+                    return_code: _,
+                }) = e
+                {
                     self.pinv_svd_into_with_rcond(rcond)
-                }
-                else {
+                } else {
                     Err(e)
                 }
-            },
+            }
             Ok((q, r)) => {
                 if is_rank_deficient(&r, rcond) {
-                    // Fallback to SVD if matrix was rank deficient.
                     drop(q);
                     drop(r);
                     self.pinv_svd_into_with_rcond(rcond)
-                }
-                else {
-                    // Compute the pseudoinverse from QR decomposition.
+                } else {
                     let pinv = pinv_qr(q, r)?;
-
-                    // Compose output.
                     if ncols > nrows {
-                        Ok(PseudoInverseOutput{
+                        Ok(PseudoInverseOutput {
                             pinv: pinv.reversed_axes(),
                             rank: nrows,
                         })
-                    }
-                    else {
-                        Ok(PseudoInverseOutput{
-                            pinv,
-                            rank: ncols,
-                        })
+                    } else {
+                        Ok(PseudoInverseOutput { pinv, rank: ncols })
                     }
                 }
-            },
+            }
         }
     }
 
-    fn pinv_svd_into(self) ->Result<PseudoInverseOutput<Self::PInv>> {
+    fn pinv_svd_into(self) -> Result<PseudoInverseOutput<Self::PInv>> {
         const RCOND: f64 = 1e-15;
         self.pinv_svd_into_with_rcond(MaybeComplex::real(RCOND))
     }
 
-    fn pinv_svd_into_with_rcond(self, rcond: Self::Real) -> Result<PseudoInverseOutput<Self::PInv>> {
+    fn pinv_svd_into_with_rcond(
+        self,
+        rcond: Self::Real,
+    ) -> Result<PseudoInverseOutput<Self::PInv>> {
         let rcond = rcond.abs();
         let (u, s, vh) = self.svddc_into(UVTFlag::Some)?;
         let (rank, pinv) = pinv_svd_with_rcond(u.unwrap(), s, vh.unwrap(), rcond);
-        Ok(PseudoInverseOutput{ rank, pinv })
+        Ok(PseudoInverseOutput { rank, pinv })
     }
 
     fn pinv_qr_into(self) -> Result<PseudoInverseOutput<Self::PInv>> {
@@ -415,40 +427,33 @@ where
         // Make self be DataMut if it isn't already.
         let a = self.into_owned();
 
-        // Attempt QR decomposition.
         let nrows = a.nrows();
         let ncols = a.ncols();
         let (q, r) = if ncols > nrows {
             a.reversed_axes().qr_into()?
-        }
-        else if ncols < nrows {
+        } else if ncols < nrows {
             a.qr_into()?
-        }
-        else {
+        } else {
             let (q, r) = a.qr_square_into()?;
             (q.into_owned(), r)
         };
 
         // Raise error if rank deficient.
         if is_rank_deficient(&r, rcond) {
-            return Err(LinalgError::Lapack(lax::error::Error::LapackComputationalFailure{return_code: 2}));
+            return Err(LinalgError::Lapack(
+                lax::error::Error::LapackComputationalFailure { return_code: 2 },
+            ));
         }
 
         // Compute the pseudoinverse.
         let pinv = pinv_qr(q, r)?;
-
-        // Compose output.
         if ncols > nrows {
-            Ok(PseudoInverseOutput{
+            Ok(PseudoInverseOutput {
                 pinv: pinv.reversed_axes(),
                 rank: nrows,
             })
-        }
-        else {
-            Ok(PseudoInverseOutput{
-                pinv,
-                rank: ncols,
-            })
+        } else {
+            Ok(PseudoInverseOutput { pinv, rank: ncols })
         }
     }
 }
@@ -456,16 +461,16 @@ where
 #[cfg(test)]
 mod test {
     extern crate blas_src;
+    use super::*;
     use approx::AbsDiffEq;
-    use ndarray::{array, Data, Dim, Dimension, s, ShapeBuilder, Zip};
+    use ndarray::{array, s, Data, Dim, Dimension, ShapeBuilder, Zip};
     use ndarray_rand::RandomExt;
     use num_complex::Complex64;
     use rand_distr::StandardNormal;
-    use super::*;
 
     // Generate a matrix from the random normal distribution.
     // Odds are the matrix will be full rank.
-    fn make_full_rank<Sh: ShapeBuilder>(shape: Sh) -> Array::<f64, <Sh as ShapeBuilder>::Dim> {
+    fn make_full_rank<Sh: ShapeBuilder>(shape: Sh) -> Array<f64, <Sh as ShapeBuilder>::Dim> {
         Array::<f64, _>::random(shape, StandardNormal)
     }
 
@@ -477,7 +482,10 @@ mod test {
         D: Dimension,
     {
         let mut c = Array::<Complex64, _>::zeros(r.raw_dim());
-        Zip::from(&mut c).and(r).and(i).apply(|c, r, i| *c = Complex64::new(*r, *i));
+        Zip::from(&mut c)
+            .and(r)
+            .and(i)
+            .apply(|c, r, i| *c = Complex64::new(*r, *i));
         c
     }
 
@@ -500,7 +508,7 @@ mod test {
     // Generate a 2d matrix from the random normal distribution
     // where the third column is the sum of the first 2 columns.
     // The matrix will have rank n - 1 where n is the number of columns.
-    fn make_rank_deficient<Sh: ShapeBuilder>(shape: Sh) -> Array::<f64, Dim<[Ix; 2]>> {
+    fn make_rank_deficient<Sh: ShapeBuilder>(shape: Sh) -> Array<f64, Dim<[Ix; 2]>> {
         let a = Array::<f64, _>::random(shape, StandardNormal);
         let mut a = a.into_dimensionality::<Dim<[Ix; 2]>>().unwrap();
         let shape = a.shape();
@@ -519,7 +527,13 @@ mod test {
         // Convert from real into complex.
         let a: Array<f64, _> = array![1., 2., 3.];
         let b: Array<Complex64, _> = into_maybe_complex(a);
-        assert!(b == array![Complex64::new(1., 0.), Complex64::new(2., 0.), Complex64::new(3., 0.)]);
+        assert!(
+            b == array![
+                Complex64::new(1., 0.),
+                Complex64::new(2., 0.),
+                Complex64::new(3., 0.)
+            ]
+        );
     }
 
     #[test]

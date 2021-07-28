@@ -5,7 +5,7 @@
 //! [`ArrayBase::append()`](https://docs.rs/ndarray/0.15.3/ndarray/struct.ArrayBase.html#method.append)
 
 extern crate blas_src;
-use ndarray::{array, Array, Axis, concatenate, stack};
+use ndarray::{array, concatenate, stack, Array, Axis};
 
 fn main() {
     // Generate some matrices to work with.
@@ -85,8 +85,11 @@ fn main() {
     // Drop the empty shell of vec2.
     std::mem::drop(vec2);
     // Convert back to a matrix of the appropriate shape.
-    let mat = Array::from_shape_vec((3,3), vec1).unwrap();
-    println!("Memory-efficient concatenation of arrays 1 and 2 (rows):\n{:?}\n", mat);
+    let mat = Array::from_shape_vec((3, 3), vec1).unwrap();
+    println!(
+        "Memory-efficient concatenation of arrays 1 and 2 (rows):\n{:?}\n",
+        mat
+    );
     // Unlike as with `concatenate()`, which makes copies, `mat1` and `mat2` no
     // longer exist now because they were (efficiently) consumed/moved by the
     // above procedure.
@@ -99,7 +102,7 @@ fn main() {
     // mat = [mat; mat] % stack 2 row vectors into 2d matrix
     // mat(:,:,2) = mat % stack two 2d matrices into 3d matrix
     // ```
-    let mat = array![1,2,3]; // 1d array
+    let mat = array![1, 2, 3]; // 1d array
     println!("1d array:\n{:?}", mat);
     // We can stack using the ndarray::stack() function, similar to concatenate.
     let mat = stack(Axis(0), &[mat.view(), mat.view()]).unwrap();

@@ -19,14 +19,14 @@ fn main() {
     // mat(1,1) = 21
     // mat(1,2) = 22
     // ```
-    mat[[0,0]] = 11.;
+    mat[[0, 0]] = 11.;
     println!("Matrix after assignment to [0,0]:\n{:?}", mat);
     // Alternative syntax (see `get()` from <index.rs>).
-    match mat.get_mut([0,1]) {
+    match mat.get_mut([0, 1]) {
         Some(el) => {
             *el = 22.;
             println!("Matrix after assignment to [0,1]:\n{:?}", mat);
-        },
+        }
         None => {
             println!("Index [0,1] is out of bounds.");
         }
@@ -71,7 +71,7 @@ fn main() {
     mat.fill(2.);
     println!("Fill with scalar 2:\n{:?}", mat);
     // Broadcast 1d array [1,2,3] into a 2x3 matrix.
-    mat.assign(&array![1., 2., 3.].broadcast((2,3)).unwrap());
+    mat.assign(&array![1., 2., 3.].broadcast((2, 3)).unwrap());
     println!("Broadcast (explicit) row assignment:\n{:?}", mat);
     // Let ndarray try to infer what shape we want to broadcast to.
     mat.assign(&array![1., 2., 3.]);
@@ -118,8 +118,8 @@ fn main() {
     // are disjoint, i.e. they don't overlap.  We can express this expliticly
     // with `multi_slice_mut()`, here taking a view for each column.
     let (mut col1, mut col2, mut col3) = mat.multi_slice_mut((
-        s![.., 0], // 1st column as 1d view
-        s![.., 1], // 2nd column as 1d view
+        s![.., 0],   // 1st column as 1d view
+        s![.., 1],   // 2nd column as 1d view
         s![.., 2..], // 3rd column as 2d column view (just for fun)
     ));
     col1.fill(1.); // fill 1st column with ones

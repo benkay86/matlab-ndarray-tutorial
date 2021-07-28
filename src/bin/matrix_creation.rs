@@ -7,7 +7,7 @@
 extern crate blas_src;
 
 // Bring needed traits and macros into scope.
-use ndarray::{array, Array, Ix, Dim};
+use ndarray::{array, Array, Dim, Ix};
 
 fn main() {
     // Use ndarray's `array!` macro to initialize a matrix with literal values.
@@ -41,25 +41,28 @@ fn main() {
     // ```matlab
     // mat = zeros(2,3)
     // ```
-    let mat = Array::<f64, _>::zeros((2,3));
+    let mat = Array::<f64, _>::zeros((2, 3));
     println!("2x3 array of zeros:\n{:?}", mat);
     // We can also fill an array with ones.
     //
     // ```matlab
     // mat = ones(2,3)
     // ```
-    let mat = Array::<f64, _>::ones((2,3));
+    let mat = Array::<f64, _>::ones((2, 3));
     println!("2x3 array of ones:\n{:?}", mat);
     // Or whatever value we want.
     //
     // ```matlab
     // mat = zeros(2,3) + 42
     // ```
-    let mat = Array::from_elem((2,3), 42.);
-    println!("2x3 array of the life, universe, and everything:\n{:?}", mat);
+    let mat = Array::from_elem((2, 3), 42.);
+    println!(
+        "2x3 array of the life, universe, and everything:\n{:?}",
+        mat
+    );
     // We can even fill the array by visiting each element with a function or
     // closure.
-    let mat = Array::from_shape_fn((2,3), |(x,y)| 3.* x as f64 + y as f64);
+    let mat = Array::from_shape_fn((2, 3), |(x, y)| 3. * x as f64 + y as f64);
     println!("2x3 array of offsets:\n{:?}\n", mat);
 
     // Create a one-dimensional array over a range.  Note that rust ranges
@@ -91,6 +94,6 @@ fn main() {
     // ```matlab
     // mat = diag([1,2])
     // ```
-    let mat = Array::from_diag(&array![1.,2.]);
+    let mat = Array::from_diag(&array![1., 2.]);
     println!("2x2 diagonal matrix matrix:\n{:?}", mat);
 }

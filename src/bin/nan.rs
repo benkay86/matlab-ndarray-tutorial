@@ -17,7 +17,10 @@ fn main() {
     // vec = [1, 2, NaN, 4, NaN, 6]
     // any(isnan(vec))
     // ```
-    println!("Does vec contain nans? {:?}.\n", vec.iter().any(|x| x.is_nan()));
+    println!(
+        "Does vec contain nans? {:?}.\n",
+        vec.iter().any(|x| x.is_nan())
+    );
 
     // Find indices of all the not-nan values.  Count how many nans there are.
     // Create a copy without the nans.
@@ -29,8 +32,8 @@ fn main() {
     // ```
     let real_indices: Array<Ix, Dim<[Ix; 1]>> = vec
         .indexed_iter() // Create an indexed iterator.
-        .filter(|(_,x)| !x.is_nan()) // Filter out nans.
-        .map(|(i,_)| i) // Extract reamining indices.
+        .filter(|(_, x)| !x.is_nan()) // Filter out nans.
+        .map(|(i, _)| i) // Extract reamining indices.
         .collect();
     println!("real_indices =\n{:?}", real_indices);
     println!("There are {} nans in vec.", vec.len() - real_indices.len());

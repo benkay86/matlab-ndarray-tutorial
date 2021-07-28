@@ -12,8 +12,8 @@
 //! the magic of `par_mapv_inplace()` works.
 
 extern crate blas_src;
-use ndarray::{Array, Axis, array};
 use matlab_ndarray_tutorial::lls;
+use ndarray::{array, Array, Axis};
 use ndarray_rand::{RandomExt, SamplingStrategy};
 use rand_distr::StandardNormal;
 
@@ -28,7 +28,9 @@ fn main() {
     // y = x * b + normrnd(0, 1, n_obs, 1);
     // ```
     let n_obs = 32;
-    let x = Array::linspace(0., 3., n_obs).into_shape((n_obs, 1)).unwrap();
+    let x = Array::linspace(0., 3., n_obs)
+        .into_shape((n_obs, 1))
+        .unwrap();
     // Try setting b to zero and see what happens to the p-value.
     let b = array![1.];
     println!("true beta: {:?}", b[0]);
@@ -96,14 +98,7 @@ fn main() {
     // p = 1 - sum / n_perm
     // ```
     let t0 = t0[0].abs();
-    let sum = t.fold(0, |sum, t| {
-        if t0 > t.abs() {
-            sum + 1
-        }
-        else {
-            sum
-        }
-    });
+    let sum = t.fold(0, |sum, t| if t0 > t.abs() { sum + 1 } else { sum });
     // Compute the p-value.
     let p = 1. - (sum as f64) / (n_perm as f64);
     println!("p-value: {:?}", p);

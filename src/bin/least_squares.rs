@@ -4,7 +4,7 @@
 
 extern crate blas_src;
 use matlab_ndarray_tutorial::pseudoinverse::{PseudoInverse, PseudoInverseOutput};
-use ndarray::{Array, Axis, array, s, Zip};
+use ndarray::{array, s, Array, Axis, Zip};
 use ndarray_linalg::{LeastSquaresResult, LeastSquaresSvd};
 use ndarray_rand::RandomExt;
 use rand_distr::StandardNormal;
@@ -26,7 +26,8 @@ fn main() {
     let x = {
         let mut x = Array::<f64, _>::ones((n, 3));
         x.slice_mut(s![.., 1]).assign(&Array::linspace(0., 3., n));
-        x.slice_mut(s![.., -1]).assign(&Array::<f64, _>::random(n, StandardNormal));
+        x.slice_mut(s![.., -1])
+            .assign(&Array::<f64, _>::random(n, StandardNormal));
         x
     };
     let b = array![1., 2., 0.];
@@ -40,7 +41,9 @@ fn main() {
     // ```matlab
     // b = x\y
     // ```
-    let LeastSquaresResult { rank, solution: b, .. } = x.least_squares(&y).unwrap();
+    let LeastSquaresResult {
+        rank, solution: b, ..
+    } = x.least_squares(&y).unwrap();
     println!("Estimated beta coefficeints from least squares:\n{:?}", b);
     // We get the rank for free.
     println!("Rank of x is {:?}.", rank);
@@ -68,7 +71,7 @@ fn main() {
             sst + y0 * y0
         })
     };
-    let r2 = 1. - sse/sst;
+    let r2 = 1. - sse / sst;
     println!("Coefficient of determination:\n{:?}", r2);
     // In Matlab we could also solve the linear system by first using the pinv()
     // convenience function to compute the pseudoinverse, and then multiplying
@@ -89,7 +92,9 @@ fn main() {
     //
     // Note, if we weren't using `x` later in the tutorial, it would be more
     // memory efficient to use `least_squares_into()`.
-    let LeastSquaresResult { solution: x_pinv, .. } = x.least_squares(&Array::<f64,_>::eye(n)).unwrap();
+    let LeastSquaresResult {
+        solution: x_pinv, ..
+    } = x.least_squares(&Array::<f64, _>::eye(n)).unwrap();
     let b = x_pinv.dot(&y);
     println!("Estimated beta coefficeints from pseudoinverse:\n{:?}", b);
     // Having the pseudoinverse, we can now compute t-values as well.

@@ -93,14 +93,17 @@ fn main() {
     let original_mat = &mat; // store reference to original mat
     let mat = array![4., 5., 6.]; // shadow original with a new mat
     println!("new mat:\n{:?}", mat);
-    println!("Original mat still exists, but its name is shadowed:\n{:?}\n", original_mat);
+    println!(
+        "Original mat still exists, but its name is shadowed:\n{:?}\n",
+        original_mat
+    );
 
     // Closures are a lot like Rust functions and have similar propreties when
     // it comes to dropping variables.  This has led to the ever-popular toilet
     // closure so-called because |_|{} looks kind of like a toilet.  It is
     // basically the same thing as `drop()`, but perhaps more cryptic.
     let mat1 = array![1., 2., 3.];
-    (|_|{})(mat1);
+    (|_| {})(mat1);
     // Uncomment the following line to get a compiler error.
     // println!("mat1 was flushed down the toilet:\n{:?}", mat1);
 
@@ -114,15 +117,11 @@ fn main() {
     let mat = new_mat;
     println!("mat after adding 1:\n{:?}", mat);
     // And now with the toilet closure idiom.
-    let mat = (|mat|{
-        &mat + 1.
-    })(mat);
+    let mat = (|mat| &mat + 1.)(mat);
     println!("mat after adding 1 twice:\n{:?}", mat);
     // Even more concisely using the `move` keyword to capture `mat` from the
     // the current scope by explicitly moving it into the closure.
-    let mat = (move||{
-        &mat + 1.
-    })();
+    let mat = (move || &mat + 1.)();
     println!("mat after adding 1 three times:\n{:?}", mat);
     // Note that ndarray performs addition in-place by default.  So we could
     // actually have done the following without shadowing because the `+`

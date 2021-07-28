@@ -35,7 +35,7 @@ fn main() {
     println!("Transpose of 2d matrix:\n{:?}\n", mat);
 
     // But beware, transposing a 1d array has no effect.
-    let mat = array![1.,2.,3.];
+    let mat = array![1., 2., 3.];
     println!("1d array:\n{:?}", mat);
     let mat = mat.t();
     println!("Transpose of 1d matrix:\n{:?}", mat);
@@ -63,7 +63,7 @@ fn main() {
     // Reshaping might fail if `mat` is not contiguous in memory or if we ask
     // for a shape that is different than the number of elements in `mat`.  In
     // this example we simply `unwrap()` the `Result`.
-    let mat = mat.into_shape((3,2)).unwrap();
+    let mat = mat.into_shape((3, 2)).unwrap();
     println!("Reshaped into 3x2 matrix:\n{:?}", mat);
     // Since an `Array` is pretty much just a fancy `Vec` with shape and stride
     // information, we can also convert to and from a `Vec` without
@@ -78,12 +78,15 @@ fn main() {
     // And then reshape back to the original 2x3 array:
     // [[1, 2, 3]
     //  [4, 5, 6]]
-    let mat = mat.into_shape((2,3)).unwrap();
+    let mat = mat.into_shape((2, 3)).unwrap();
     println!("Reshaped back to 2x3 matrix:\n{:?}", mat);
     // Or we can reshape directly from a vector in one step.
     let mat = mat.into_raw_vec(); // back to a vector
-    let mat = Array::from_shape_vec((2,3), mat).unwrap();
-    println!("Reshaped to 2x3 matrix directly from raw vector:\n{:?}\n", mat);
+    let mat = Array::from_shape_vec((2, 3), mat).unwrap();
+    println!(
+        "Reshaped to 2x3 matrix directly from raw vector:\n{:?}\n",
+        mat
+    );
 
     // With ndarray we can "broadcast" a small array into a larger array without
     // reallocating memory.  Matlab can do this too, but has to allocate memory
@@ -99,8 +102,11 @@ fn main() {
     // specifying the number of times to repeat the array along each axis, we
     // specify what we want the final shape to be (3 rows, 2 columns).  The
     // operation will return `None` if we ask for an impossible shape.
-    let bigmat = mat.broadcast((3,2)).unwrap();
-    println!("Broadcast 3 times along row axis and once along column axis:\n{:?}", bigmat);
+    let bigmat = mat.broadcast((3, 2)).unwrap();
+    println!(
+        "Broadcast 3 times along row axis and once along column axis:\n{:?}",
+        bigmat
+    );
     // When broadcasting, the shape of the last axis must remain the same.
     // We can broadcast a 1d matrix of length 2 to an n x 2 matrix.
     // We can broadcast a 3 x 2 matrix to an n x 3 x 2 matrix.
@@ -108,7 +114,7 @@ fn main() {
     // To achieve the same effect we can broadcast to n x 2 and then take the
     // transpose.
     // let bigmat = mat.broadcast((2,3)).unwrap(); // panics at runtime
-    let bigmat = mat.broadcast((3,2)).unwrap().reversed_axes();
+    let bigmat = mat.broadcast((3, 2)).unwrap().reversed_axes();
     println!("Broadcast and transpose:\n{:?}", bigmat);
     // As with slicing, we can convert the result of any of the above operations
     // into an owned array which is contiguous in memory.

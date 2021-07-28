@@ -1,8 +1,8 @@
 //! Matrix math with ndarray.
 
 extern crate blas_src;
-use core::ops::Mul;
 use core::ops::Add;
+use core::ops::Mul;
 use ndarray::{array, Axis};
 
 fn main() {
@@ -94,7 +94,10 @@ fn main() {
     // ```matlab
     // a .* b'
     // ```
-    println!("&a * &vec_b.broadcast().t() =\n{:?}", &mat_a * &vec_b.broadcast((3,3)).unwrap().t());
+    println!(
+        "&a * &vec_b.broadcast().t() =\n{:?}",
+        &mat_a * &vec_b.broadcast((3, 3)).unwrap().t()
+    );
     println!("&a * &mat_b.t() =\n{:?}\n", &mat_a * &mat_b.t());
 
     // We can also do element-wise addition, multiplication, etc.
@@ -105,23 +108,23 @@ fn main() {
     // ```
     println!("&a + 2 =\n{:?}", &mat_a + 2.); // or: (&mat_a).add(2.)
     println!("&b * 2 =\n{:?}", &vec_b * 2.); // or: (&vec_b).mul(2.)
-    // We must "map" more complex element-wise operations onto the array.
-    // The map method takes a closure or function pointer.
-    // `map()` visits the elements of the array by reference and `mapv()` by
-    // value.  `mapv()` is more efficient for trivially-copyable elements.
-    //
-    // ```matlab
-    // abs(mat_a)
-    // sin(vec_b)
-    // ```
+                                             // We must "map" more complex element-wise operations onto the array.
+                                             // The map method takes a closure or function pointer.
+                                             // `map()` visits the elements of the array by reference and `mapv()` by
+                                             // value.  `mapv()` is more efficient for trivially-copyable elements.
+                                             //
+                                             // ```matlab
+                                             // abs(mat_a)
+                                             // sin(vec_b)
+                                             // ```
     println!("abs(a) = \n{:?}", mat_a.mapv(f32::abs)); // function pointer
     println!("sin(b) = \n{:?}", vec_b.mapv(|b| f32::sin(b))); // closure
-    // Unlike Matlab, in Rust we have the option of mapping in-place or
-    // mapping into a new matrix without creating a copy.
-    //
-    // ```
-    // a = sin(abs(a))
-    // ```
+                                                              // Unlike Matlab, in Rust we have the option of mapping in-place or
+                                                              // mapping into a new matrix without creating a copy.
+                                                              //
+                                                              // ```
+                                                              // a = sin(abs(a))
+                                                              // ```
     let mut mat_a = mat_a.mapv_into(f32::abs);
     mat_a.mapv_inplace(f32::sin);
     println!("sin(abs(a)) = \n{:?}\n", mat_a);

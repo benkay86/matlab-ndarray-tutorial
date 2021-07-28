@@ -30,8 +30,8 @@ fn main() {
     let mut sum = 0.;
     for x in 0..2 {
         for y in 0..3 {
-            print!("{:?} ", mat[[x,y]]);
-            sum += mat[[x,y]];
+            print!("{:?} ", mat[[x, y]]);
+            sum += mat[[x, y]];
         }
     }
     println!("\nsum = {:?}", sum);
@@ -88,7 +88,7 @@ fn main() {
     // Sometimes we actually need to know the indices of of each element of the
     // array as we iterate over it.  As before, we will visit the elements in
     // logical order.
-    mat.indexed_iter().for_each(|((x,y), el)| {
+    mat.indexed_iter().for_each(|((x, y), el)| {
         println!("mat[[{:?},{:?}]] = {:?}", x, y, el);
     });
 
@@ -96,13 +96,14 @@ fn main() {
     // efficiently iterate over an array to create a new array of the same size,
     // or to modify the elements of the array in place.  Obviously there is a
     // more efficient way to get an array of ones, but as a didactic example:
-    let mut mat = Array::<f64, _>::zeros((2,3));
+    let mut mat = Array::<f64, _>::zeros((2, 3));
     println!("\nzeros:\n{:?}", mat);
     mat.mapv_inplace(|el| el + 1.);
     println!("ones:\n{:?}", mat);
     // We can also modify in place while doing something with the index, here
     // replacing each element of the array with the sum of its x and y indices.
-    mat.indexed_iter_mut().for_each(|((x,y), el)| *el = (x + y) as f64);
+    mat.indexed_iter_mut()
+        .for_each(|((x, y), el)| *el = (x + y) as f64);
     println!("sum of indices:\n{:?}\n", mat);
 
     // We don't have to iterate over just the elements of an array.  We can also
@@ -112,10 +113,14 @@ fn main() {
     let mat = array![[1., 2., 3.], [4., 5., 6.]];
     println!("mat = \n{:?}", mat);
     println!("Rows:");
-    mat.genrows().into_iter().for_each(|row| println!("{:?}", row));
+    mat.genrows()
+        .into_iter()
+        .for_each(|row| println!("{:?}", row));
     // For higher-dimensional arrays, the more generic version of this is:
     println!("Columns (lanes):");
-    mat.lanes(Axis(0)).into_iter().for_each(|col| println!("{:?}", col));
+    mat.lanes(Axis(0))
+        .into_iter()
+        .for_each(|col| println!("{:?}", col));
     // Or if we want to iterate over high-dimensional subviews along an axis:
     println!("Columns (axis iterator):");
     mat.axis_iter(Axis(1)).for_each(|col| println!("{:?}", col));
@@ -123,24 +128,30 @@ fn main() {
     // by constructing an indexed iterator.  In this case we use the
     // `enumerate()` method:
     println!("Columns with colum number:");
-    mat.axis_iter(Axis(1)).enumerate().for_each(|(index, col)| println!("col num {}: {:?}", index, col));
+    mat.axis_iter(Axis(1))
+        .enumerate()
+        .for_each(|(index, col)| println!("col num {}: {:?}", index, col));
 
     // Often we want to iterate over two or more arrays in lockstep.  We can do
     // this with the `Zip` helper.  Here we assign the elements of one array
     // into the elements of another using `Zip`.  Note that in ndarray 0.15 the
     // `Zip` struct implements `IntoIterator` meaning we can call `for_each()`
     // on it instead of using this peculiar `apply()` method.`
-    let mut mat2 = Array::<f64, _>::zeros((2,3)); // allocate space
+    let mut mat2 = Array::<f64, _>::zeros((2, 3)); // allocate space
     Zip::from(&mut mat2).and(&mat).apply(|el2, &el| *el2 = el);
     println!("\nmat2 = mat = \n{:?}", mat2);
     // If desired, we can keep the indices from *one* of the arrays being zipped
     // together with `Zip::indexed()`.
-    Zip::indexed(&mut mat2).and(&mat).apply(|(x,y), el2, &el| *el2 = el + (x + y) as f64);
+    Zip::indexed(&mut mat2)
+        .and(&mat)
+        .apply(|(x, y), el2, &el| *el2 = el + (x + y) as f64);
     println!("mat2 = mat + x + y = \n{:?}", mat2);
     // We zip together arrays and slices in interesting ways.  Here we compute
     // a vector that is the sum of each column.
     let mut col_sums = Array::<f64, _>::zeros(3);
-    Zip::from(&mut col_sums).and(mat.gencolumns()).apply(|col_sum, col| *col_sum = col.sum());
+    Zip::from(&mut col_sums)
+        .and(mat.gencolumns())
+        .apply(|col_sum, col| *col_sum = col.sum());
     println!("col_sums =\n{:?}", col_sums);
     // Wow, that was fun!  Don't forget how to do it the easy way:
     col_sums = mat.sum_axis(Axis(0));

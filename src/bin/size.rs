@@ -17,7 +17,12 @@ fn main() {
     // We can get the shape (analagous to size) as a slice.
     let sz = mat.shape();
     println!("Shape of matrix: {:?}", sz);
-    println!("{:?}-dimensional matrix has {:?} rows and {:?} columns.", sz.len(), sz[0], sz[1]);
+    println!(
+        "{:?}-dimensional matrix has {:?} rows and {:?} columns.",
+        sz.len(),
+        sz[0],
+        sz[1]
+    );
     // Or we can just get the number of dimenions.
     let ndim = mat.ndim();
     println!("Matrix has {:?} dimensions.", ndim);
@@ -54,5 +59,9 @@ fn main() {
     // represent vectors.  For example, `solve_into()` in <build_test.rs> and
     // `diag()` in <matrix_creation.rs> take a 1d array.
     let v = array![1., 2., 3.]; // truly a 1d array
-    println!("1d array has {:?} dimension and size: {:?}", v.ndim(), v.shape());
+    println!(
+        "1d array has {:?} dimension and size: {:?}",
+        v.ndim(),
+        v.shape()
+    );
 }

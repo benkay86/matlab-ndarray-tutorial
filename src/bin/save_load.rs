@@ -35,8 +35,8 @@
 
 extern crate blas_src;
 use ndarray::*;
-use std::fs::File;
 use ndarray_npy::{ReadNpyExt, WriteNpyExt};
+use std::fs::File;
 
 fn main() {
     // Make a 2x2 matrix of double-precision floating point numbers.
@@ -44,9 +44,7 @@ fn main() {
     // ```matlab
     // mat = [1,2; 3,4]
     // ```
-    let mat: Array<f64, Dim<[Ix; 2]>> = array!
-        [[1.,2.],
-         [3.,4.]];
+    let mat: Array<f64, Dim<[Ix; 2]>> = array![[1., 2.], [3., 4.]];
     println!("Original mat =\n{:?}", mat);
 
     // Serialize to npy file.

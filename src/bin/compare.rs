@@ -41,6 +41,12 @@ fn main() {
     let b = array![[2., 3., 4.], [5., 6., 7.]];
     println!("a == a: {:?}", a == a);
     println!("a approx a: {:?}", a.abs_diff_eq(&a, f64::EPSILON));
-    println!("a < b: {:?}", ndarray::Zip::from(&a).and(&b).all(|a, b| a < b));
-    println!("a > b: {:?}", ndarray::Zip::from(&a).and(&b).all(|a, b| a > b));
+    println!(
+        "a < b: {:?}",
+        ndarray::Zip::from(&a).and(&b).all(|a, b| a < b)
+    );
+    println!(
+        "a > b: {:?}",
+        ndarray::Zip::from(&a).and(&b).all(|a, b| a > b)
+    );
 }

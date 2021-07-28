@@ -22,8 +22,8 @@
 //! <parfor.rs> example.
 
 extern crate blas_src;
-use ndarray::{Array, Axis, array, Zip};
 use matlab_ndarray_tutorial::lls;
+use ndarray::{array, Array, Axis, Zip};
 use ndarray_rand::{RandomExt, SamplingStrategy};
 use rand_distr::StandardNormal;
 
@@ -65,50 +65,53 @@ fn main() {
         let ncpus_perm = std::cmp::max(1, ncpus - ncpus_test);
         // Outer thread pool for running each test.
         // Use a limited number of cpus.
-        let pool_test = rayon::ThreadPoolBuilder::default().num_threads(ncpus_test).build().unwrap();
+        let pool_test = rayon::ThreadPoolBuilder::default()
+            .num_threads(ncpus_test)
+            .build()
+            .unwrap();
         // Inner thread pool for running the permutations.
         // Use the remaining cpus.
-        let pool_perm = rayon::ThreadPoolBuilder::default().num_threads(ncpus_perm).build().unwrap();
+        let pool_perm = rayon::ThreadPoolBuilder::default()
+            .num_threads(ncpus_perm)
+            .build()
+            .unwrap();
         (pool_test, pool_perm)
     };
 
     // Run parallel operations in the outer, test pool.
     pool_test.install(|| {
-        Zip::from(&mut p_values).and(x.gencolumns()).and(y.gencolumns()).par_apply(|p, x, y| {
-            // Make design matrix x 2-dimensional.
-            let x = x.insert_axis(Axis(1));
-            // Pre-solve the linear system.
-            let solved_model = lls::pre_solve(x).unwrap();
-            // Compute t-values for the un-permuted model.
-            let t0 = solved_model.tvalues_with(&y);
-            // Pre-allocate matrix of permuted t-values.
-            let mut t = Array::<f64, _>::zeros(n_perm);
+        Zip::from(&mut p_values)
+            .and(x.gencolumns())
+            .and(y.gencolumns())
+            .par_apply(|p, x, y| {
+                // Make design matrix x 2-dimensional.
+                let x = x.insert_axis(Axis(1));
+                // Pre-solve the linear system.
+                let solved_model = lls::pre_solve(x).unwrap();
+                // Compute t-values for the un-permuted model.
+                let t0 = solved_model.tvalues_with(&y);
+                // Pre-allocate matrix of permuted t-values.
+                let mut t = Array::<f64, _>::zeros(n_perm);
 
-            // Run parallel operations in the inner, permutation pool.
-            pool_perm.install(|| {
-                t.par_mapv_inplace(|_| {
-                    // Sample permuted observations.
-                    let yp = y.sample_axis(Axis(0), y.len(), SamplingStrategy::WithoutReplacement);
-                    // Compute t-values with permuted observations and store
-                    // result in the variable `t`.
-                    solved_model.tvalues_with(&yp)[0]
+                // Run parallel operations in the inner, permutation pool.
+                pool_perm.install(|| {
+                    t.par_mapv_inplace(|_| {
+                        // Sample permuted observations.
+                        let yp =
+                            y.sample_axis(Axis(0), y.len(), SamplingStrategy::WithoutReplacement);
+                        // Compute t-values with permuted observations and store
+                        // result in the variable `t`.
+                        solved_model.tvalues_with(&yp)[0]
+                    });
                 });
-            });
 
-            // Two-tailed test.
-            // Sum the number of simulations in which |t0| > |t|.
-            let t0 = t0[0].abs();
-            let sum = t.fold(0, |sum, t| {
-                if t0 > t.abs() {
-                    sum + 1
-                }
-                else {
-                    sum
-                }
+                // Two-tailed test.
+                // Sum the number of simulations in which |t0| > |t|.
+                let t0 = t0[0].abs();
+                let sum = t.fold(0, |sum, t| if t0 > t.abs() { sum + 1 } else { sum });
+                // Compute the p-valu and store it in the variable `p_values`.
+                *p = 1. - (sum as f64) / (n_perm as f64);
             });
-            // Compute the p-valu and store it in the variable `p_values`.
-            *p = 1. - (sum as f64) / (n_perm as f64);
-        });
     });
 
     // Examine the 32 p-values we computed in parallel.

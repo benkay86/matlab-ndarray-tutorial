@@ -13,7 +13,7 @@
 //! memory layout.
 
 extern crate blas_src;
-use ndarray::{array, Axis, s};
+use ndarray::{array, s, Axis};
 
 fn main() {
     // Generate a matrix for us to slice in different ways.
@@ -21,10 +21,12 @@ fn main() {
     // ```matlab
     // mat = [1,11,111,1111;2,22,222,2222;3,33,333,3333;4,44,444,4444]
     // ```
-    let mat = array![[1., 11., 111., 1111.],
-                     [2., 22., 222., 2222.],
-                     [3., 33., 333., 3333.],
-                     [4., 44., 444., 4444.]];
+    let mat = array![
+        [1., 11., 111., 1111.],
+        [2., 22., 222., 2222.],
+        [3., 33., 333., 3333.],
+        [4., 44., 444., 4444.]
+    ];
     println!("Full 4x4 matrix:\n{:?}\n", mat);
 
     // Slice a view of the upper left 2x3 matrix.
@@ -86,10 +88,16 @@ fn main() {
     println!("Second column as 1-dimensional array:\n{:?}", view);
     // Or equivalently:
     let view = mat.column(1);
-    println!("Second column as 1-dimensional array using column():\n{:?}", view);
+    println!(
+        "Second column as 1-dimensional array using column():\n{:?}",
+        view
+    );
     // And more generally (for arrays with more than 2 axes):
     let view = mat.index_axis(Axis(1), 1);
-    println!("Second column as 1-dimensional array using index_axis():\n{:?}", view);
+    println!(
+        "Second column as 1-dimensional array using index_axis():\n{:?}",
+        view
+    );
     // If we want two simply *collapse* the axis to get a 2-dimensional column
     // vector then we must use the range syntax 1..2.  This starts at the second
     // column and goes up to but not including the third column -- in other
@@ -100,13 +108,22 @@ fn main() {
     // Or equivalently:
     let mut view = mat.view(); // generate a full view into the array
     view.collapse_axis(Axis(1), 1); // modify the view in-place
-    println!("Second column as 2-dimensional column vector:\n{:?}\n", view);
+    println!(
+        "Second column as 2-dimensional column vector:\n{:?}\n",
+        view
+    );
 
     // We can convert the view into an owned array by cloning the data.
     // This deep copy also makes the layout contiguous in memory.
     // Note the change in stride and layout.
-    println!("Is view in standard layout? {:?}", view.is_standard_layout());
+    println!(
+        "Is view in standard layout? {:?}",
+        view.is_standard_layout()
+    );
     let submat = view.to_owned();
     println!("Clone of view into new array:\n{:?}", submat);
-    println!("Is submat in standard layout? {:?}", submat.is_standard_layout());
+    println!(
+        "Is submat in standard layout? {:?}",
+        submat.is_standard_layout()
+    );
 }

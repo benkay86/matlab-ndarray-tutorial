@@ -21,9 +21,8 @@ extern crate blas_src;
 // We return the sum as a 1d array of f64.
 fn array_scalar_add1(
     arr: &ndarray::Array<f64, ndarray::Dim<[ndarray::Ix; 1]>>,
-    ref scal: f64
-) -> ndarray::Array<f64, ndarray::Dim<[ndarray::Ix; 1]>>
-{
+    ref scal: f64,
+) -> ndarray::Array<f64, ndarray::Dim<[ndarray::Ix; 1]>> {
     arr + *scal
 }
 
@@ -46,7 +45,7 @@ fn array_scalar_add1(
 // have done `MyData` and `MyDim` instead).
 fn array_scalar_add2<Data, Dim>(
     arr: &ndarray::ArrayBase<Data, Dim>,
-    ref scal: f64
+    ref scal: f64,
 ) -> ndarray::Array<f64, Dim>
 where
     Data: ndarray::Data<Elem = f64>,
@@ -74,7 +73,7 @@ where
 // In practice this means our function accepts integers and floats.
 fn array_scalar_add3<Data, Dim, N1, N2>(
     arr: &ndarray::ArrayBase<Data, Dim>,
-    ref scal: N2
+    ref scal: N2,
 ) -> ndarray::Array<N1, Dim>
 where
     Data: ndarray::Data<Elem = N1>,
@@ -118,21 +117,24 @@ trait Float:
     // Needed for any call into an LAPACK function, e.g. solvers.
     ndarray_linalg::Lapack
 { }
-impl<F> Float for F where F:
-    Copy +
-    ndarray::ScalarOperand +
-    // ndarray::LinalgScalar +
-    std::cmp::PartialOrd +
-    ndarray_linalg::Scalar<Real=F> + // get rid of Real=F to allow complex #'s
-    ndarray_linalg::Lapack
-{ }
+impl<F> Float for F where
+    F: Copy
+        + ndarray::ScalarOperand
+        +
+        // ndarray::LinalgScalar +
+        std::cmp::PartialOrd
+        + ndarray_linalg::Scalar<Real = F>
+        + // get rid of Real=F to allow complex #'s
+        ndarray_linalg::Lapack
+{
+}
 
 // Similar to `array_scalar_add3()` but uses the `Float` trait alias above to
 // cut down on typing.  The tradeoff is that now we can only operate on floating
 // point types -- no integers allowed.
 fn array_scalar_add4<Data, Dim, F>(
     arr: &ndarray::ArrayBase<Data, Dim>,
-    ref scal: F
+    ref scal: F,
 ) -> ndarray::Array<F, Dim>
 where
     Data: ndarray::Data<Elem = F>,
@@ -145,8 +147,7 @@ where
 // So far we haven't used any literal numbers (e.g. `2.`) in our function.
 // Let's rewrite `array_scalar_add2()` to always add the number 2 to whatever
 // array is passed in.
-fn array_scalar_add5<Data, Dim>(arr: &ndarray::ArrayBase<Data, Dim>)
--> ndarray::Array<f64, Dim>
+fn array_scalar_add5<Data, Dim>(arr: &ndarray::ArrayBase<Data, Dim>) -> ndarray::Array<f64, Dim>
 where
     Data: ndarray::Data<Elem = f64>,
     Dim: ndarray::Dimension,
@@ -156,8 +157,7 @@ where
 
 /// Generic function that adds the number 2 to an array.
 /// Use `Float` trait alias and `f()` cast defined above for convenience.
-fn array_scalar_add6<Data, Dim, F>(arr: &ndarray::ArrayBase<Data, Dim>)
-    -> ndarray::Array<F, Dim>
+fn array_scalar_add6<Data, Dim, F>(arr: &ndarray::ArrayBase<Data, Dim>) -> ndarray::Array<F, Dim>
 where
     Data: ndarray::Data<Elem = F>,
     Dim: ndarray::Dimension,
@@ -173,10 +173,28 @@ fn main() {
 
     // Test out each of our functions above.
     println!("arr: {:?}\nscal: {:?}\n", arr, scal);
-    println!("array_scalar_add1(arr, scal) =\n{:?}", array_scalar_add1(&arr, scal));
-    println!("array_scalar_add2(arr, scal) =\n{:?}", array_scalar_add2(&arr, scal));
-    println!("array_scalar_add3(arr, scal) =\n{:?}", array_scalar_add3(&arr, scal));
-    println!("array_scalar_add4(arr, scal) =\n{:?}", array_scalar_add4(&arr, scal));
-    println!("array_scalar_add5(arr, scal) =\n{:?}", array_scalar_add5(&arr));
-    println!("array_scalar_add6(arr, scal) =\n{:?}", array_scalar_add6(&arr));
+    println!(
+        "array_scalar_add1(arr, scal) =\n{:?}",
+        array_scalar_add1(&arr, scal)
+    );
+    println!(
+        "array_scalar_add2(arr, scal) =\n{:?}",
+        array_scalar_add2(&arr, scal)
+    );
+    println!(
+        "array_scalar_add3(arr, scal) =\n{:?}",
+        array_scalar_add3(&arr, scal)
+    );
+    println!(
+        "array_scalar_add4(arr, scal) =\n{:?}",
+        array_scalar_add4(&arr, scal)
+    );
+    println!(
+        "array_scalar_add5(arr, scal) =\n{:?}",
+        array_scalar_add5(&arr)
+    );
+    println!(
+        "array_scalar_add6(arr, scal) =\n{:?}",
+        array_scalar_add6(&arr)
+    );
 }

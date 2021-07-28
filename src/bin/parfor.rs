@@ -3,8 +3,8 @@
 //! First work through the examples in <for.rs>.
 
 extern crate blas_src;
-use ndarray::{array, Array, Axis, Zip};
 use ndarray::parallel::prelude::{IntoParallelIterator, IntoParallelRefIterator};
+use ndarray::{array, Array, Axis, Zip};
 use rayon::iter::{IndexedParallelIterator, ParallelIterator};
 
 fn main() {
@@ -23,7 +23,6 @@ fn main() {
     // Uncomment the following lines to start the global threadpool manually.
     // In this example we use one less than the number of CPUs.
     // rayon::ThreadPoolBuilder::default().num_threads(num_cpus::get() - 1).build_global().unwrap();
-
 
     // Sum all the elements of an array in parallel.
     //
@@ -60,14 +59,14 @@ fn main() {
     // value (the sum).
     // Note the mapping from &f64 to f64 so that we can sum by value.
     let sum = mat.par_iter().map(|x| *x).reduce(
-        || 0., // closure producing the identity value
-        | x, y | x + y // fold operation
+        || 0.,        // closure producing the identity value
+        |x, y| x + y, // fold operation
     );
     println!("sum reduction (lock free) = {:?}\n", sum);
 
     // There is also a parallel version of the map.  Here was start with a
     // matrix of zeros and increment each element in parallel.
-    let mut mat = Array::<f64, _>::zeros((2,3));
+    let mut mat = Array::<f64, _>::zeros((2, 3));
     println!("zeros =\n{:?}", mat);
     mat.par_mapv_inplace(|el| el + 1.);
     println!("ones =\n{:?}\n", mat);
@@ -79,11 +78,14 @@ fn main() {
     // iterator with `axis_iter()` and then transform it into a parallel
     // iterator using `into_par_iter()`.  (Not all iterators support this,
     // but the axis iterator does.)
-    let mut mat = Array::<f64, _>::zeros((2,3));
+    let mut mat = Array::<f64, _>::zeros((2, 3));
     println!("zeros =\n{:?}", mat);
-    mat.axis_iter_mut(Axis(1)).into_par_iter().enumerate().for_each(|(col_idx, mut col)| {
-        col.fill(col_idx as f64);
-    });
+    mat.axis_iter_mut(Axis(1))
+        .into_par_iter()
+        .enumerate()
+        .for_each(|(col_idx, mut col)| {
+            col.fill(col_idx as f64);
+        });
     println!("column indices =\n{:?}\n", mat);
 
     // We can also zip (iteratre in lockstep) over two arrays in parallel.
@@ -92,6 +94,8 @@ fn main() {
     let mat = array![[1., 2., 3.], [4., 5., 6.]];
     println!("mat = \n{:?}", mat);
     let mut col_sums = Array::<f64, _>::zeros(3);
-    Zip::from(&mut col_sums).and(mat.axis_iter(Axis(1))).par_apply(|col_sum, col| *col_sum = col.sum());
+    Zip::from(&mut col_sums)
+        .and(mat.axis_iter(Axis(1)))
+        .par_apply(|col_sum, col| *col_sum = col.sum());
     println!("col_sums = \n{:?}", col_sums);
 }

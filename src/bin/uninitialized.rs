@@ -8,7 +8,7 @@
 #![allow(unused_imports)]
 extern crate blas_src;
 use core::mem::MaybeUninit;
-use ndarray::{Array, s};
+use ndarray::{s, Array};
 
 fn main() {
     // In Matlab we often pre-allocate a matrix and then initialize it later
@@ -24,7 +24,7 @@ fn main() {
     // end
     // ```
     let mut mat = Array::<usize, _>::zeros((3, 2));
-    for ((i,j), el) in mat.indexed_iter_mut() {
+    for ((i, j), el) in mat.indexed_iter_mut() {
         *el = 2 * i + j;
     }
     println!("mat =\n{:?}", mat);
@@ -33,7 +33,7 @@ fn main() {
     // initialized twice: first with 0, and then with its intended value.
     // Wouldn't it be more efficient to initialize each element just once?
     // Ndarray gives us many flexible array initialization methods for this.
-    let mat = Array::from_shape_fn((3,2), |(x,y)| 2 * x + y);
+    let mat = Array::from_shape_fn((3, 2), |(x, y)| 2 * x + y);
     println!("mat =\n{:?}", mat);
 
     // What if setting the values in the array is very non-trivial and can't be
@@ -46,7 +46,7 @@ fn main() {
     let mut mat = Array::<MaybeUninit<usize>, _>::maybe_uninit((3, 2));
     // We can't *read* from the newly-allocated memory because it has not been
     // initialized, but it is totally safe to *write* to it.
-    for ((i,j), el) in mat.indexed_iter_mut() {
+    for ((i, j), el) in mat.indexed_iter_mut() {
         *el = MaybeUninit::new(2 * i + j);
     }
     // Now comes the dangerous part.  We must guarantee to the compiler that
