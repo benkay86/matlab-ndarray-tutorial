@@ -99,14 +99,12 @@ fn main() {
     println!("Estimated beta coefficeints from pseudoinverse:\n{:?}", b);
     // Having the pseudoinverse, we can now compute t-values as well.
     // Recall the variance-covariance matrix of the estimates of b is given by
-    // inv(x'*x).  Recall also that pinv(x) = inv(x'*x)*x'.  The pseudoinverse
-    // has the property that A * pinv(A) = I and also that pinv(A)' = pinv(A').
-    // Therefore we can write the following to get the variance-covariance
-    // matrix from the pseudoinverse:
-    // pinv(x)*pinv(x') = inv(x'*x)*x'*pinv(x')
-    // pinv(x)*pinv(x') = inv(x'*x)*I
-    // pinv(x)*pinv(x') = inv(x'*x)
-    // pinv(x)*pinv(x)' = inv(x'*x)
+    // inv(x'*x).  Since the inverse of x'*x is guaranteed to exist, it is true
+    // that inv(x'*x) = pinv(x'*x).  Then, using Greville's proof:
+    // inv(x'*x) = pinv(x'*x) = pinv(x)*pinv(x') = pinv(x)*pinv(x)'
+    // https://epubs.siam.org/doi/10.1137/1008107
+    // The last step is true because the pseudoinverse operation commutes with
+    // the complex conjugate (transpose).
     //
     // (Note also that we can compute the variance-covariance matrix directly
     // from the singular value decomposition as v*inv(s).^2*v')
