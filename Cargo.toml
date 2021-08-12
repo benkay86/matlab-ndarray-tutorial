@@ -14,23 +14,29 @@ readme = "README.md"
 # number for each crate to ensure compatibility (compilation will fail if you
 # get it wrong).  ndarray-linalg is typically the "oldest" crate which then
 # dictates which version of ndarray and friends you need.
-#
-# The approx feature is needed for approximate comparison; see `13_compare.rs`.
-# The blas feature tells ndarray to optimize certain operations (e.g. matrix
-# multiplication) by using a blas backend (see below).
-# The rayon feature is needed for parallel iteration (similar to Matlab's
-# parfor).
-approx = "^0.4"
+
+# The core crates: ndarray, with support for multithreading with rayon and
+# optimized matrix operations with blas, and ndarray-linalg, which offers
+# additional linear algebra routine using lapac.
 ndarray = { version = "~0.14", features = ["approx", "blas", "rayon"] }
 ndarray-linalg = "~0.13"
+# The approx feature for ndarray and associated crate are needed for approximate
+# comparison of floating point numbers.
+approx = "^0.4"
+# For fine-tuned control over the rayon threading library.
+rayon = "^1.5.1"
+# Support for the numpy file format.
 ndarray-npy = "~0.7"
-ndarray-rand = "~0.13"
+# Support for writing generic functions using complex (imaginary) numbers.
 num-complex = "~0.3"
-num_cpus = "^1"
 num-traits = "~0.2"
+# Detect the number of CPU cores available.
+num_cpus = "^1"
+# Support for random number generation and basic distributions (e.g. normal).
 rand = "~0.8"
 rand_distr = "~0.4"
-rayon = "^1.5.1"
+ndarray-rand = "~0.13"
+# Inverse CDF functions (e.g. for the T distribution) for computing p-values.
 statrs = "~0.14"
 
 # Linking against a backend
