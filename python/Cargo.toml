@@ -1,0 +1,29 @@
+[package]
+name = "python-examples"
+description = "Interfacing between Rusts's ndarray and Python's numpy."
+version = "0.1.0"
+authors = ["Benjamin Kay <benjamin@benkay.net>"]
+edition = "2018"
+
+# Needed specifically for the python extension module example, see src/lib.rs.
+# We will need maturin to actually build a Python wheel.
+[lib]
+name = "rust_ext" # name of the extension module
+crate-type = ["cdylib"]
+
+[dependencies]
+# The pyo3 crate is the de facto standard for Python <--> Rust bindings.
+# The extension module feature is only needed when we are building a
+# Python extension module.
+pyo3 = { version = "~0.14", features = ["extension-module"] }
+
+# The numpy crate integrates with pyo3 for low-cost conversions between Python's
+# numpy arrays and Rust's ndarray arrays.  It is not needed for basic
+# Python <--> Rust integration.
+numpy = "~0.14"
+
+# The usual ndarray dependencies, see ../rust/Cargo.toml for more information.
+# Note these examples do not need ndarray-linalg.
+ndarray = { version = "~0.14", features = ["blas"] }
+blas-src = { version = "~0.8", default-features = false, features = ["openblas"] }
+openblas-src = { version = "~0.10", features = ["cblas", "system"] }
