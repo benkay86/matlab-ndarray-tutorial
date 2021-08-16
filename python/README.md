@@ -19,6 +19,15 @@ Numpy is a Python extension module written in C to make numerical operations in 
 
 See the example in [src/lib.rs](./src/lib.rs).
 
+## Memory Management
+
+Rust and Python have very different ideas about how to manage memory.  Rust frees memory immediately when a variable goes out of scope.  In more complicated cases of memory use, such as heap-allocated memory behind reference-counted smart pointers like [`Rc`](https://doc.rust-lang.org/stable/std/rc/struct.Rc.html), memory is freed immediately once the reference count goes to zero.
+
+Python liberates the programmer from needing to think about memory management at all, but there are tradeoffs.  Memory isn't freed at a predictable time in Python, rather, it is freed when the garbage collector runs and breaks cyclic dependencies.  Within a multithreaded context, memory can only be modified while the global interpreter lock (GIL) is held to prevent race conditions.
+
+See the example in [src/bin/memory.rs](./src/bin/memory.rs) for concrete examples of how Python lifetimes interact with Rust's notion of memory management through PyO3's API for occasionally unexepected results.
+
+If you are writing a Python module extension with a custom class that holds references to Python memory, read about [how to participate in garbage collection](https://pyo3.rs/master/class/protocols.html) in the PyO3 guide.
 
 ## Getting Help
 
