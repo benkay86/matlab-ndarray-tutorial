@@ -19,6 +19,12 @@ Numpy is a Python extension module written in C to make numerical operations in 
 
 See the example in [src/lib.rs](./src/lib.rs).
 
+## Calling Python from Rust
+
+In addition to [NumPy](https://numpy.org/), Python has mature tools like [NiBabel](https://nipy.org/nibabel/) for working with neuroimaging data.  We can take advantage of these tools by calling Python from inside our Rust programs.  This will, of course, require the CPython interpreter and any Python module dependencies to be installed.
+
+The example in [src/bin/ni2npy64.rs](./src/bin/ni2npy64.rs) is a fully-fledged command line utility for converting any neuroimaging file supported by nibabel to a 64-bit numpy file.  It calls Python's nibabel to read the image data into an ndarray array.  It uses Rust's [ndarray_npy](https://github.com/jturner314/ndarray-npy) crate to save the array as a numpy file.
+
 ## Memory Management
 
 Rust and Python have very different ideas about how to manage memory.  Rust frees memory immediately when a variable goes out of scope.  In more complicated cases of memory use, such as heap-allocated memory behind reference-counted smart pointers like [`Rc`](https://doc.rust-lang.org/stable/std/rc/struct.Rc.html), memory is freed immediately once the reference count goes to zero.
