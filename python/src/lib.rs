@@ -59,9 +59,9 @@ extern crate blas_src;
 
 use ndarray::{ArrayView, ArrayViewMut, IxDyn};
 use numpy::{IntoPyArray, PyArray, PyReadonlyArray};
-use pyo3::proc_macro::{pyfunction, pymodule};
+use pyo3::proc_macro::{pyclass, pyfunction, pymethods, pymodule, pyproto};
 use pyo3::types::PyModule;
-use pyo3::{wrap_pyfunction, PyResult, Python};
+use pyo3::{wrap_pyfunction, PyObjectProtocol, PyResult, Python};
 
 // Very simple function that takes and returns trivially copyable types.
 // Pyo3 takes care of automatically converting between Python and Rust f64.
@@ -162,14 +162,77 @@ pub fn add_scalar_to_array_inplace(
     Ok(())
 }
 
+// So far we've just created free functions that can be called from Python.
+// Let's get more sophisticated and create a Python class from a Rust struct.
+//
+// First the struct.
+
+/// Point(x, y, /)
+/// ---
+///
+/// Create a new point with coordinates x and y.
+#[pyclass]
+#[derive(Clone)]
+struct Point {
+    // The #[pyo3(get, set)] make automatic getters and setters from us so the
+    // caller can "get" the value with `mypoint.x`
+    // and "set" it with `mypoint.x = 0.`.
+    #[pyo3(get, set)]
+    x: f64,
+    #[pyo3(get, set)]
+    y: f64,
+}
+
+// Now the class methods.
+#[pymethods]
+impl Point {
+    // Tell Python this is the "new" method for constructing the class.
+    // Also provide default arguments of zero for x and y.
+    #[new]
+    #[args(x = "0.", y = "0.")]
+    fn new(x: f64, y: f64) -> Self {
+        Self { x, y }
+    }
+
+    /// distance(other, /)
+    /// ---
+    ///
+    /// Compute the distance between this point to and another point, other.
+    /// If no other point is given, computes distance from the origin (0, 0).
+    #[args(other = "None")]
+    fn distance(&self, other: Option<Self>) -> f64 {
+        let other = other.unwrap_or(Self { x: 0., y: 0. });
+        let dx = self.x - other.x;
+        let dy = self.y - other.y;
+        f64::sqrt(dx * dx + dy * dy)
+    }
+}
+
+// We can make our class inspectable and printable by implementing the
+// respective Python "protocols."  Although we don't need it in this example,
+// if you write a Python class that holds references to other Python objects,
+// read about how to implement the garbage collector protocol:
+// https://pyo3.rs/master/class/protocols.html
+#[pyproto]
+impl PyObjectProtocol for Point {
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!("Point ({}, {})", self.x, self.y))
+    }
+    fn __str__(&self) -> PyResult<String> {
+        Ok(format!("({}, {})", self.x, self.y))
+    }
+}
+
 // Here is where we actually create the python module.
 // The function to create the module should have the same name as the module.
 // We add each function to the module using PyModule::add_wrapped() combined
 // with the wrap_pyfunction! macro.
+// We add our class to the module in one fell swoop with PyModule::add_class().
 #[pymodule]
 pub fn rust_ext(_: Python, module: &PyModule) -> PyResult<()> {
     module.add_wrapped(wrap_pyfunction!(add_scalars))?;
     module.add_wrapped(wrap_pyfunction!(add_scalar_to_array))?;
     module.add_wrapped(wrap_pyfunction!(add_scalar_to_array_inplace))?;
+    module.add_class::<Point>()?;
     Ok(())
 }
