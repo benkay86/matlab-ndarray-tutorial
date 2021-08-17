@@ -1,6 +1,13 @@
 //! The "gotchas" of unexpectedly long lifetimes
 //! when managing Python's memory with PyO3.
 //! See <https://pyo3.rs>.
+//!
+//! Per [this workaround](https://pyo3.rs/v0.14.2/faq.html#i-cant-run-cargo-test-im-having-linker-issues-like-symbol-not-found-or-undefined-reference-to-_pyexc_systemerror),
+//! run this example with:
+//!
+//! ```
+//! cargo run --no-default-features --bin memory
+//! ```
 
 use pyo3::types::PyString;
 use pyo3::{Py, PyResult, Python};
