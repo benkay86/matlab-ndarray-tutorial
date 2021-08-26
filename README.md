@@ -48,6 +48,10 @@ This tutorial is divided into [workspaces](https://doc.rust-lang.org/cargo/refer
 	+ Need examples of how to write mex extensions in Rust.
 	+ Your help writing this tutorial is welcome!
 
+## See Also
+
+- [Official ndarray examples](https://github.com/rust-ndarray/ndarray-examples)
+
 ## Getting Help
 	
 If you discover an error in this tutorial, have a question about an example, or would like to suggest an improvement, please open an issue on [Github](https://github.com/benkay86/matlab-ndarray-tutorial/issues) or e-mail the primary author [benjamin@benkay.net](mailto:benjamin@benkay.net).
