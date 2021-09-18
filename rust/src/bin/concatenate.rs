@@ -1,8 +1,4 @@
 //! Making arrays bigger.
-//!
-//! Currently this requires copying into a newly allocated array.
-//! Starting with ndarray 0.15 we can reallocate an existing array with:
-//! [`ArrayBase::append()`](https://docs.rs/ndarray/0.15.3/ndarray/struct.ArrayBase.html#method.append)
 
 extern crate blas_src;
 use ndarray::{array, concatenate, stack, Array, Axis};
@@ -19,32 +15,27 @@ fn main() {
     let mat2 = array![[7., 8., 9.]];
     let mat3 = array![[10.], [11.]];
     println!("Array 1:\n{:?}", mat1);
-    println!("Array 2:\n{:?}", mat1);
-    println!("Array 3:\n{:?}\n", mat2);
+    println!("Array 2:\n{:?}", mat2);
+    println!("Array 3:\n{:?}\n", mat3);
 
-    // In Matlab we can make a matrix bigger simply by assigning to it.  When
-    // the matrix is enlarged, new elements are initialized to zero before
-    // assignment.
+    // In Matlab we can concatenate two matrices together by creating a third
+    // matrix containing the first two matrices.  For example, we can
+    // concatenate a 1 x 3 matrix onto the bottom of a 2 x 3 matrix to get a
+    // 3 x 3 matrix:
     //
     // ```
-    // mat = [1,2,3]; size(mat) % 1 3
-    // mat(4,4) = 1
-    // % 1     2     3     0
-    // % 0     0     0     0
-    // % 0     0     0     0
-    // % 0     0     0     1
-    // size(mat) % 4 4
+    // mat1 = [1,2,3; 4,5,6];
+    // mat2 = [7,8,9];
+    // mat = [mat1; mat2]
+    // % 1     2     3
+    // % 4     5     6
+    // % 7     8     9
     // ```
     //
-    // In Rust (and Python's) ndarray*, we cannot change the memory allocation
-    // after the array is created.  That is to say, we can neither shrink nor
-    // grow the array.  However, we can make a new array by concatenating two
-    // existing arrays.  Note that this does *not* mutate either of the existing
-    // arrays.  The concatenate operation will fail if the arrays are of
-    // incompatible shapes.
-    //
-    // *In ndarray 0.15 `ArrayBase::append()` can enlarge the memory allocation
-    // of an existing array.
+    // We can do the same with Rust's ndarray using the `ndarray::concatenate()`
+    // function.  The arguments are which axis we want to concatenate along
+    // (0 to add on a row, 1 to add on a column) and the arrays we want to
+    // concatenate.  We'll get an error if the dimensions aren't compatible.
     //
     // ```matlab
     // mat = [mat1; mat2] % concatenate rows
@@ -59,19 +50,25 @@ fn main() {
     // Studying the above closely, we see that `concatenate` is taking read-only
     // view of the arrays.  That means, best case scenario, at least one copy of
     // mat, mat1, and mat2 (or mat3) exists in memory at the same time.  This is
-    // potentially quite wasteful if we are working with big arrays!
+    // potentially quite wasteful if we are working with big arrays!  So, if you
+    // can write code that avoids concatenating altogether, that's best.  For
+    // example, if we know the size of the final array we want in advance, then
+    // it's most efficient to allocate that array at the start and assign values
+    // into it as we go.
     //
-    // If we know the size of the final array we want in advance, then it's
-    // most efficient to allocate that array at the start and assign values into
-    // it as we go.
-    //
-    // If we just don't know the size in advance then, if we concatenate along
-    // the (row) major dimension of memory layout, we can be more memory
-    // efficient by converting to and from `Vec`.  Note that this won't work to
-    // append columns.
-    //
-    // *Again, in ndarray 0.15 this is no longer necessary since we can just
-    // use `ArrayBase::append()`.`
+    // When concatenation is truly necessary, we may be able to do it more
+    // efficienty with `ArrayBase::append()`.  Ideally this will re-use the
+    // memory of the first array and copy only the second array, but whether or
+    // not this can be done efficiently depends on the layout of the underlying
+    // array.  Appending a row onto a row-major (C-order) memory layout array is
+    // efficient.  Appending a column onto a row-major array will require
+    // reallocations and copies.
+    let mut mat = mat1.clone(); // need mat1 for a later example
+    mat.append(Axis(0), mat2.view()).unwrap();
+    println!("Appending array 2 onto array 1 (rows):\n{:?}", mat);
+    // For really fine control we can convert to and from `Vec`.  The same
+    // caveats about memory layout apply.  This really isn't necessary since
+    // ndarray 0.15 added the `ArrayBase::append()` method.
     //
     // First we convert to raw vectors.  This does not invole any reallocation.
     let mut vec1 = mat1.into_raw_vec();
@@ -86,10 +83,7 @@ fn main() {
     std::mem::drop(vec2);
     // Convert back to a matrix of the appropriate shape.
     let mat = Array::from_shape_vec((3, 3), vec1).unwrap();
-    println!(
-        "Memory-efficient concatenation of arrays 1 and 2 (rows):\n{:?}\n",
-        mat
-    );
+    println!("Append array2 onto array 1 onto array 2 as vector:\n{:?}\n",mat);
     // Unlike as with `concatenate()`, which makes copies, `mat1` and `mat2` no
     // longer exist now because they were (efficiently) consumed/moved by the
     // above procedure.
