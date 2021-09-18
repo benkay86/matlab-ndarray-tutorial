@@ -43,7 +43,7 @@ fn main() {
     // But if you are writing performance-critical code and can't afford to
     // double-initialize, the following method allocates memory for the array
     // *without* initializing that memory.
-    let mut mat = Array::<MaybeUninit<usize>, _>::maybe_uninit((3, 2));
+    let mut mat = Array::<usize, _>::uninit((3, 2));
     // We can't *read* from the newly-allocated memory because it has not been
     // initialized, but it is totally safe to *write* to it.
     for ((i, j), el) in mat.indexed_iter_mut() {
@@ -65,7 +65,7 @@ fn main() {
     // This would be bad because we didn't initialize all of the array's memory.
     // Only the first element gets initialized.
     //
-    // let mut mat = Array::<MaybeUninit<usize>, _>::maybe_uninit((3, 2));
+    // let mut mat = Array::<usize, _>::uninit((3, 2));
     // mat[[0,0]] = MaybeUninit::new(0);
     // let mat = unsafe { mat.assume_init() };
     // println!("mat =\n{:?}", mat);
@@ -76,7 +76,7 @@ fn main() {
     // array's memory (only the part that is sliced).  Since *all* of the memory
     // was not initialized, it isn't safe to call assume_init().
     //
-    // let mat = Array::<MaybeUninit<usize>, _>::maybe_uninit((3, 2));
+    // let mat = Array::<usize, _>::uninit((3, 2));
     // let mut mat = mat.slice_move(s![..;2, ..]); // take every other row
     // for ((i,j), el) in mat.indexed_iter_mut() {
     //     *el = MaybeUninit::new(2 * i + j);

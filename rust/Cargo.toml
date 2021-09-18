@@ -1,7 +1,7 @@
 [package]
 name = "rust-examples"
 description = "Common Matlab idioms in ndarary with Rust."
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Benjamin Kay <benjamin@benkay.net>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
@@ -17,25 +17,36 @@ readme = "README.md"
 
 # The core crates: ndarray, with support for multithreading with rayon and
 # optimized matrix operations with blas, and ndarray-linalg, which offers
-# additional linear algebra routine using lapac.
-ndarray = { version = "~0.14", features = ["approx", "blas", "rayon"] }
-ndarray-linalg = "~0.13"
+# additional linear algebra routine using lapack.
+#
+# Use the same minor version as ndarray-linalg.
+ndarray = { version = "~0.15", features = ["approx", "blas", "rayon"] }
+# Use the latest stable version.
+ndarray-linalg = "~0.14"
 # The approx feature for ndarray and associated crate are needed for approximate
 # comparison of floating point numbers.
-approx = "^0.4"
+# Use the same minor version as ndarray-linalg.
+approx = { version = "~0.4", features = ["num-complex"] }
 # For fine-tuned control over the rayon threading library.
+# Use the same major version as ndarray.
 rayon = "^1.5.1"
 # Support for the numpy file format.
-ndarray-npy = "~0.7"
+# Use the latest minor version to support this version of ndarray.
+ndarray-npy = "~0.8"
 # Support for writing generic functions using complex (imaginary) numbers.
-num-complex = "~0.3"
+# Use the same minor versions as ndarray-linalg.
+num-complex = "~0.4"
 num-traits = "~0.2"
 # Detect the number of CPU cores available.
 num_cpus = "^1"
 # Support for random number generation and basic distributions (e.g. normal).
+#
+# Use same minor version as ndarray-linalg.
 rand = "~0.8"
+# Use same minor version published in workspace for rand crate.
 rand_distr = "~0.4"
-ndarray-rand = "~0.13"
+# Use same minor version published in workspace for this version of ndarray.
+ndarray-rand = "~0.14"
 # Inverse CDF functions (e.g. for the T distribution) for computing p-values.
 statrs = "~0.14"
 
@@ -75,7 +86,12 @@ statrs = "~0.14"
 # For ndarray-linalg, depend on lax with either the openblas-system or
 # openblas-static feature.  Then depend on openblas-src with cblas and lapacke
 # features, and the appropriate system or static feature.
+#
+# Use latest minor version to depend on this minor version of openblas-src.
 blas-src = { version = "~0.8", default-features = false, features = ["openblas"] }
+# Use latest minor version to depend on this minor verion of openblas-src.
 lapack-src = { version = "~0.8", default-features = false, features = ["openblas"] }
-lax = { version = "~0.1", features = ["openblas-system"] }
+# Use same minor version published in workspace of ndarray-linalg.
+lax = { version = "~0.2", features = ["openblas-system"] }
+# Use minor version from lax.
 openblas-src = { version = "~0.10", features = ["cblas", "lapacke", "system"] }

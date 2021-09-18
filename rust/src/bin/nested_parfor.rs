@@ -22,10 +22,10 @@
 //! <parfor.rs> example.
 
 extern crate blas_src;
-use matlab_ndarray_tutorial::lls;
 use ndarray::{array, Array, Axis, Zip};
 use ndarray_rand::{RandomExt, SamplingStrategy};
 use rand_distr::StandardNormal;
+use rust_examples::lls;
 
 fn main() {
     // Building on <parfor.rs> we will parallelize a simple permutation test.
@@ -81,9 +81,9 @@ fn main() {
     // Run parallel operations in the outer, test pool.
     pool_test.install(|| {
         Zip::from(&mut p_values)
-            .and(x.gencolumns())
-            .and(y.gencolumns())
-            .par_apply(|p, x, y| {
+            .and(x.columns())
+            .and(y.columns())
+            .par_for_each(|p, x, y| {
                 // Make design matrix x 2-dimensional.
                 let x = x.insert_axis(Axis(1));
                 // Pre-solve the linear system.

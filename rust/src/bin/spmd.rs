@@ -5,10 +5,10 @@
 //! manually.  This is roughly analagous to Matlab's spmd primitives.
 
 extern crate blas_src;
-use matlab_ndarray_tutorial::lls;
 use ndarray::{array, Array, Axis};
 use ndarray_rand::{RandomExt, SamplingStrategy};
 use rand_distr::StandardNormal;
+use rust_examples::lls;
 
 fn main() {
     // Generate matrix of observations y and predictors x with known regression

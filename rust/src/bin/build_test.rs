@@ -7,7 +7,6 @@
 extern crate blas_src;
 
 // Bring needed traits and macros into scope.
-use approx::AbsDiffEq;
 use ndarray::array;
 use ndarray_linalg::Solve;
 

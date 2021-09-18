@@ -1,7 +1,6 @@
 //! Solve non-singular systems of linear equations and compute matrix inverse.
 
 extern crate blas_src;
-use approx::AbsDiffEq;
 use ndarray::{array, Array};
 use ndarray_linalg::solve::{Factorize, Inverse, Solve};
 

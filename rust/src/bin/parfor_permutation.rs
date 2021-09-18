@@ -12,10 +12,10 @@
 //! the magic of `par_mapv_inplace()` works.
 
 extern crate blas_src;
-use matlab_ndarray_tutorial::lls;
 use ndarray::{array, Array, Axis};
 use ndarray_rand::{RandomExt, SamplingStrategy};
 use rand_distr::StandardNormal;
+use rust_examples::lls;
 
 fn main() {
     // Generate a very simple linear least squares system with one predictor.

@@ -55,3 +55,17 @@ This tutorial is divided into [workspaces](https://doc.rust-lang.org/cargo/refer
 ## Getting Help
 	
 If you discover an error in this tutorial, have a question about an example, or would like to suggest an improvement, please open an issue on [Github](https://github.com/benkay86/matlab-ndarray-tutorial/issues) or e-mail the primary author [benjamin@benkay.net](mailto:benjamin@benkay.net).
+
+### Upgrading ndarray 0.14 --> 0.15
+
+If you have recently pulled this tutorial from ndarray version 0.14 to 0.15, you may get get bizarre trait errors like this one:
+
+```
+the trait FromPyObject<'_> is not implemented for PyReadonlyArray<'_, f64, Dim<IxDynImpl>>
+```
+
+If some of your code uses traits from ndarray 0.15 and other parts use the same trait from ndarray 0.14, Rust will see these as different, incompatible traits.  To fix this, update your `Cargo.lock` file to make sure all packages depend on the same version of ndarray.  Simply go to the root directory of this respository and run:
+
+```
+cargo update
+```

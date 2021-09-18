@@ -3,11 +3,11 @@
 //! p-values.
 
 extern crate blas_src;
-use matlab_ndarray_tutorial::pseudoinverse::{PseudoInverse, PseudoInverseOutput};
 use ndarray::{array, s, Array, Axis, Zip};
 use ndarray_linalg::{LeastSquaresResult, LeastSquaresSvd};
 use ndarray_rand::RandomExt;
 use rand_distr::StandardNormal;
+use rust_examples::pseudoinverse::{PseudoInverse, PseudoInverseOutput};
 use statrs::distribution::{ContinuousCDF, StudentsT};
 
 fn main() {

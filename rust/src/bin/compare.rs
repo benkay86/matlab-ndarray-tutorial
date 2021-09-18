@@ -1,7 +1,6 @@
 //! Compare scalars and arrays.
 
 extern crate blas_src;
-use approx::AbsDiffEq;
 use ndarray::array;
 
 fn main() {

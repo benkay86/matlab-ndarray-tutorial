@@ -4,11 +4,11 @@
 //! cargo run --release --bin 20_benchmark
 
 extern crate blas_src;
-use matlab_ndarray_tutorial::pseudoinverse::PseudoInverse;
 use ndarray::{Array, Axis};
 use ndarray_linalg::{LeastSquaresResult, LeastSquaresSvdInto};
 use ndarray_rand::RandomExt;
 use rand_distr::StandardNormal;
+use rust_examples::pseudoinverse::PseudoInverse;
 
 fn main() {
     // In <19_least_squares.rs> we introduced several different ways of

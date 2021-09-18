@@ -65,7 +65,7 @@ where
     let eps = rcond * max;
     // Check if any diagonal elements of `r` is smaller then epsilon.
     // If so, the matrix is rank deficient.
-    r_diag.into_iter().any(|el| el < &eps)
+    r_diag.into_iter().any(|el| el < eps)
 }
 
 // Helper function to compute the pseudoinverse of a skinny matrix whose QR

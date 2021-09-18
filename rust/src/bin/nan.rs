@@ -49,7 +49,7 @@ fn main() {
     let vec_filtered: Array<f64, Dim<[Ix; 1]>> = vec
         .into_iter() // could use iter() if we don't want to consume vec
         .filter(|x| !x.is_nan())
-        .map(|x| *x)
+        .map(|x| x)
         .collect();
     println!("vec_filtered = \n{:?}", vec_filtered);
 }

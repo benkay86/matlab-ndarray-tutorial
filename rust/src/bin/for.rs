@@ -71,15 +71,12 @@ fn main() {
     println!("\nsum = {:?}", sum);
     // Ndarray's `iter()` visits the elements of the array in logical order,
     // that is, the outermost dimension (column) varies the fastest.  There is
-    // also a `visit()` we can call directly on the array which visits the
+    // also a `for_each()` we can call directly on the array which visits the
     // elements in an arbitrary (and possibly more efficient) order.  The sum
     // will be the same, but the order in which the elements are printed out may
     // be different.
-    //
-    // Note that in ndarray 0.15 `visit()` will be (perhaps confusingly) renamed
-    // to `for_each()`.`
     sum = 0.;
-    mat.visit(|el| {
+    mat.for_each(|el| {
         print!("{:?} ", el);
         sum += el;
     });
@@ -107,13 +104,12 @@ fn main() {
     println!("sum of indices:\n{:?}\n", mat);
 
     // We don't have to iterate over just the elements of an array.  We can also
-    // iterate over slices and views!  We can use `genrows()` and `gencolumns()`
-    // (deprecated in favor of `rows()` and `columns()` in ndarray 0.15).  There
-    // are `_mut()` versions of each of these.
+    // iterate over slices and views!  We can use `rows()` and `columns()`.
+    // There are `_mut()` versions of each of these.
     let mat = array![[1., 2., 3.], [4., 5., 6.]];
     println!("mat = \n{:?}", mat);
     println!("Rows:");
-    mat.genrows()
+    mat.rows()
         .into_iter()
         .for_each(|row| println!("{:?}", row));
     // For higher-dimensional arrays, the more generic version of this is:
@@ -134,24 +130,25 @@ fn main() {
 
     // Often we want to iterate over two or more arrays in lockstep.  We can do
     // this with the `Zip` helper.  Here we assign the elements of one array
-    // into the elements of another using `Zip`.  Note that in ndarray 0.15 the
-    // `Zip` struct implements `IntoIterator` meaning we can call `for_each()`
-    // on it instead of using this peculiar `apply()` method.`
+    // into the elements of another using `Zip`.  The `Zip` struct implements
+    // `IntoIterator` meaning we can call `for_each()` on it.
     let mut mat2 = Array::<f64, _>::zeros((2, 3)); // allocate space
-    Zip::from(&mut mat2).and(&mat).apply(|el2, &el| *el2 = el);
+    Zip::from(&mut mat2)
+        .and(&mat)
+        .for_each(|el2, &el| *el2 = el);
     println!("\nmat2 = mat = \n{:?}", mat2);
     // If desired, we can keep the indices from *one* of the arrays being zipped
     // together with `Zip::indexed()`.
     Zip::indexed(&mut mat2)
         .and(&mat)
-        .apply(|(x, y), el2, &el| *el2 = el + (x + y) as f64);
+        .for_each(|(x, y), el2, &el| *el2 = el + (x + y) as f64);
     println!("mat2 = mat + x + y = \n{:?}", mat2);
     // We zip together arrays and slices in interesting ways.  Here we compute
     // a vector that is the sum of each column.
     let mut col_sums = Array::<f64, _>::zeros(3);
     Zip::from(&mut col_sums)
-        .and(mat.gencolumns())
-        .apply(|col_sum, col| *col_sum = col.sum());
+        .and(mat.columns())
+        .for_each(|col_sum, col| *col_sum = col.sum());
     println!("col_sums =\n{:?}", col_sums);
     // Wow, that was fun!  Don't forget how to do it the easy way:
     col_sums = mat.sum_axis(Axis(0));

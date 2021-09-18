@@ -1,7 +1,7 @@
 [package]
 name = "python-examples"
 description = "Interfacing between Rusts's ndarray and Python's numpy."
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Benjamin Kay <benjamin@benkay.net>"]
 edition = "2018"
 
@@ -19,16 +19,18 @@ crate-type = ["cdylib"]
 
 [dependencies]
 # The pyo3 crate is the de facto standard for Python <--> Rust bindings.
+# Use the latest stable version.
+# See ../rust/Cargo.toml for other version dependencies.
 pyo3 = "~0.14"
 # Pure Rust implementation of the numpy (npy) file format.
 # Don't need (default enabled) support for npz files.
-ndarray-npy = { version = "~0.7", default-features = false }
+ndarray-npy = { version = "~0.8", default-features = false }
 # The numpy crate integrates with pyo3 for low-cost conversions between Python's
 # numpy arrays and Rust's ndarray arrays.  It is not needed for basic
 # Python <--> Rust integration.
 numpy = "~0.14"
 # The usual ndarray dependencies, see ../rust/Cargo.toml for more information.
 # Note these examples do not need ndarray-linalg.
-ndarray = { version = "~0.14", features = ["blas"] }
+ndarray = { version = "~0.15", features = ["blas"] }
 blas-src = { version = "~0.8", default-features = false, features = ["openblas"] }
 openblas-src = { version = "~0.10", features = ["cblas", "system"] }

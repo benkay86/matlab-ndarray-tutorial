@@ -53,13 +53,13 @@ fn main() {
     // iterators.
     let sum: f64 = mat.par_iter().sum();
     println!("sum (lock free) = {:?}", sum);
-    // More generally this is referred to as folding.  Conceptually we start
-    // with an identity value (zero) and perform some associative operation
-    // (i.e. addition) on elements of the array until we are left with a single
-    // value (the sum).
-    // Note the mapping from &f64 to f64 so that we can sum by value.
+    // More generally this is referred to as folding or reduction.  Conceptually
+    // we start with an identity value (zero) and perform some associative
+    // operation (i.e. addition) on elements of the array until we are left with
+    // a single value (the sum). Note the mapping from &f64 to f64 so that we
+    // can sum by value.
     let sum = mat.par_iter().map(|x| *x).reduce(
-        || 0.,        // closure producing the identity value
+        || 0., // closure producing the identity value
         |x, y| x + y, // fold operation
     );
     println!("sum reduction (lock free) = {:?}\n", sum);
@@ -88,14 +88,15 @@ fn main() {
         });
     println!("column indices =\n{:?}\n", mat);
 
-    // We can also zip (iteratre in lockstep) over two arrays in parallel.
+    // We can also zip (iterate in lockstep) over two arrays in parallel.
     // For example, we can compute the sum of each column in an array and store
-    // it in a second array.
+    // it in a second array.  This works the same way as in <./for.rs> except
+    // that instead of `for_each()` we call `par_for_each()`.  Easy!
     let mat = array![[1., 2., 3.], [4., 5., 6.]];
     println!("mat = \n{:?}", mat);
     let mut col_sums = Array::<f64, _>::zeros(3);
     Zip::from(&mut col_sums)
         .and(mat.axis_iter(Axis(1)))
-        .par_apply(|col_sum, col| *col_sum = col.sum());
+        .par_for_each(|col_sum, col| *col_sum = col.sum());
     println!("col_sums = \n{:?}", col_sums);
 }
