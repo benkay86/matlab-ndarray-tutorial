@@ -5,7 +5,7 @@
 //! Per [this workaround](https://pyo3.rs/v0.14.2/faq.html#i-cant-run-cargo-test-im-having-linker-issues-like-symbol-not-found-or-undefined-reference-to-_pyexc_systemerror),
 //! run this example with:
 //!
-//! ```
+//! ```ignore
 //! cargo run --no-default-features --bin memory
 //! ```
 
